@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WORK_DIR="./build/"
-BENCH_DIR="./bench_script/"
+BENCH_DIR="./bench_scripts/"
 PYTHON="/usr/bin/python"
 
 FILE_00="output_text_00.out"
