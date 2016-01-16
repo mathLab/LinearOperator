@@ -25,7 +25,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#define EIGEN_MATRIXBASE_PLUGIN "eigen_plugin.h"
+#define EIGEN_MATRIX_PLUGIN "eigen_plugin.h"
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
@@ -69,14 +69,14 @@ int main(int argc, char *argv[])
 
   E_vector v(n);
   E_vector v1(n);
-  
+
   v = Eigen::ArrayXd::Random(n);
   v1 = Eigen::ArrayXd::Random(n);
 
   E_vector b0(n);
   E_vector b1(n);
-  b0.fill(0.0);
-  b1.fill(0.0);
+  b0 = 0.0;
+  b1 = 0.0;
 
   LinearOperator<E_vector, E_vector> lo;
 
