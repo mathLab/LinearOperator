@@ -72,14 +72,14 @@ private:
 MatrixBenchmark::MatrixBenchmark (unsigned int size,
                                   unsigned int reps)
   :
+  pout(std::cout, reps == 1),
   fe (1),
   dof_handler (triangulation),
   reps(reps),
   size(size),
   timer ( std::cout,
           TimerOutput::summary,
-          TimerOutput::wall_times),
-  pout(std::cout, reps == 1)
+          TimerOutput::wall_times)
 {}
 
 void MatrixBenchmark::reset_vectors()
