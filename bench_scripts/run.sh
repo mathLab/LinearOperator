@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd benchmark
+
 BUILD_DIR="build/"
 OUTPUT_DIR="./output_dir/"
 PLOT_CMD="/usr/bin/python ../bench_scripts/plot.py"
