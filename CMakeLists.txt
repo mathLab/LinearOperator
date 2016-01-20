@@ -20,7 +20,7 @@ file(GLOB _files source/*cc)
 file(GLOB _mains apps/*cc)
 
 
-INCLUDE_DIRECTORIES(include eigen)
+INCLUDE_DIRECTORIES(include eigen blaze /opt/local/include/)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
