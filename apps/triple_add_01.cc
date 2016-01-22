@@ -17,11 +17,12 @@ int main(int argc, char *argv[])
 
   FullMatrix<double> matrix(n);
   Vector<double> x(n);
-  for (unsigned int i = 0; i < n; ++i) {
-    x[i] = i;
-    for (unsigned int j = 0; j < n; ++j)
-      matrix(i, j) = 1. + 1. / (i + 1) / (j + 1);
-  }
+  for (unsigned int i = 0; i < n; ++i)
+    {
+      x[i] = i;
+      for (unsigned int j = 0; j < n; ++j)
+        matrix(i, j) = 1. + 1. / (i + 1) / (j + 1);
+    }
   Vector<double> y = x;
   Vector<double> z = x;
 
@@ -29,13 +30,14 @@ int main(int argc, char *argv[])
 
   timer.enter_subsection("raw");
   Vector<double> tmp(n);
-  for (unsigned int i = 0; i < reps; ++i) {
-    matrix.vmult(tmp, x);
-    matrix.vmult_add(tmp, y);
-    matrix.vmult_add(tmp, z);
-    x = tmp;
-    x /= x.l2_norm();
-  }
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      matrix.vmult(tmp, x);
+      matrix.vmult_add(tmp, y);
+      matrix.vmult_add(tmp, z);
+      x = tmp;
+      x /= x.l2_norm();
+    }
   timer.leave_subsection();
 
 #ifdef DEBUG
@@ -48,10 +50,11 @@ int main(int argc, char *argv[])
 
   timer.enter_subsection("linear_operator");
   const auto step = linear_operator(matrix) * (x + y + z);
-  for (unsigned int i = 0; i < reps; ++i) {
-    x = step;
-    x /= x.l2_norm();
-  }
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      x = step;
+      x /= x.l2_norm();
+    }
   timer.leave_subsection();
 
 #ifdef DEBUG

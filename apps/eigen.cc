@@ -44,26 +44,26 @@ int main(int argc, char *argv[])
   typedef Eigen::SparseMatrix<double, Eigen::ColMajor> E_matrix;
   typedef Eigen::Ref<E_matrix> Ref_E_matrix;
   typedef Eigen::Triplet<double> T;
-  
+
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
 
-  
+
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
-  
+
   E_matrix A(n,n);
   std::vector<T> entries;
   entries.reserve(n*band);
 
-  for(int i=0; i<n; ++i)
-    for(int j=std::max(0,i-band/2); j<std::min(i+band/2, n); ++j)
+  for (int i=0; i<n; ++i)
+    for (int j=std::max(0,i-band/2); j<std::min(i+band/2, n); ++j)
       entries.push_back(T(i,j, (double)std::rand()/(double)RAND_MAX));
-      
+
   A.setFromTriplets(entries.begin(), entries.end());
   A.makeCompressed();
 
   Ref_E_matrix RA(A);
-  
+
   // Uncomment if you want to see the matrix
   // std::cout << A << std::endl;
 
@@ -81,51 +81,57 @@ int main(int argc, char *argv[])
   LinearOperator<E_vector, E_vector> lo;
 
 
-  
-  lo.vmult = [&RA] (E_vector &v, const E_vector &u) {
+
+  lo.vmult = [&RA] (E_vector &v, const E_vector &u)
+  {
     v = RA*u;
   };
 
-  lo.reinit_range_vector = [&A] (E_vector &v, bool fast) {
+  lo.reinit_range_vector = [&A] (E_vector &v, bool fast)
+  {
     v.resize(A.rows());
-    if(fast == false)
+    if (fast == false)
       v *= 0;
   };
 
-  
-  lo.reinit_domain_vector = [&A] (E_vector &v, bool fast) {
+
+  lo.reinit_domain_vector = [&A] (E_vector &v, bool fast)
+  {
     v.resize(A.cols());
-    if(fast == false)
+    if (fast == false)
       v *= 0;
   };
 
   {
     v1 = v;
     timer.enter_subsection ("linear_operator");
-    for(unsigned int i=0; i<reps; ++i) {
-      v1 *= (double)i;
-      b0 = lo*lo*lo*v;
-    }
+    for (unsigned int i=0; i<reps; ++i)
+      {
+        v1 *= (double)i;
+        b0 = lo*lo*lo*v;
+      }
     timer.leave_subsection();
   }
-  if(n<300)
-  {
-    v1 = v;
-    timer.enter_subsection ("eigen_simple");
-    for(unsigned int i=0; i<reps; ++i) {
-      v1 *= (double)i;
-      b1 = A*A*A*v;
+  if (n<300)
+    {
+      v1 = v;
+      timer.enter_subsection ("eigen_simple");
+      for (unsigned int i=0; i<reps; ++i)
+        {
+          v1 *= (double)i;
+          b1 = A*A*A*v;
+        }
+      timer.leave_subsection();
     }
-    timer.leave_subsection();
-  }
   {
     v1 = v;
     timer.enter_subsection ("eigen_smart");
-    for(unsigned int i=0; i<reps; ++i) {
-      v1 *= (double)i;
-      b1 = A*(A*(A*v));
-    }
+    for (unsigned int i=0; i<reps; ++i)
+      {
+        v1 *= (double)i;
+        b1 = A*(A*(A*v));
+      }
     timer.leave_subsection();
   }
-  
+
 }

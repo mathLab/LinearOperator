@@ -32,23 +32,26 @@ using blaze::DynamicVector;
 
 using namespace dealii;
 
-class BVector : public  blaze::DynamicVector<double> {
+class BVector : public  blaze::DynamicVector<double>
+{
 public:
   BVector() {};
-  
-  BVector(unsigned int n) :
-    DynamicVector<double>(n){};
 
-  size_t memory_consumption() {
+  BVector(unsigned int n) :
+    DynamicVector<double>(n) {};
+
+  size_t memory_consumption()
+  {
     return sizeof(*this);
   };
 
-  
-  blaze::DynamicVector<double> & operator&() {
+
+  blaze::DynamicVector<double> &operator&()
+  {
     return static_cast<blaze::DynamicVector<double>&>(*this);
   };
-  
-  
+
+
   typedef double value_type;
 };
 
@@ -62,23 +65,23 @@ int main(int argc, char *argv[])
 
   // Define Blaze types
   typedef blaze::CompressedMatrix<double,blaze::rowMajor> E_matrix;
-  
+
   //  typedef Eigen::Triplet<double> T;
-  
+
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
 
-  
+
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
-  
+
   E_matrix A(n,n,band);
   //  std::vector<T> entries;
   //  entries.reserve(n*band);
 
-  for(int i=0; i<n; ++i)
-    for(int j=std::max(0,i-band/2); j<std::min(i+band/2, n); ++j)
-       A(i,j) = (double)std::rand()/(double)RAND_MAX;
-      
+  for (int i=0; i<n; ++i)
+    for (int j=std::max(0,i-band/2); j<std::min(i+band/2, n); ++j)
+      A(i,j) = (double)std::rand()/(double)RAND_MAX;
+
   // Uncomment if you want to see the matrix
   // std::cout << A << std::endl;
 
@@ -98,40 +101,45 @@ int main(int argc, char *argv[])
   LinearOperator<BVector, BVector> lo;
 
 
-  
-  lo.vmult = [&A] (BVector &v, const BVector &u) {
+
+  lo.vmult = [&A] (BVector &v, const BVector &u)
+  {
     static_cast<blaze::DynamicVector<double>&>(v) = A*u;
   };
 
-  lo.reinit_range_vector = [&A] (BVector &v, bool fast) {
+  lo.reinit_range_vector = [&A] (BVector &v, bool fast)
+  {
     v.resize(A.rows());
-    if(fast == false)
+    if (fast == false)
       v *= 0;
   };
 
-  
-  lo.reinit_domain_vector = [&A] (BVector &v, bool fast) {
+
+  lo.reinit_domain_vector = [&A] (BVector &v, bool fast)
+  {
     v.resize(A.columns ());
-    if(fast == false)
+    if (fast == false)
       v *= 0;
   };
 
   {
     v1 = v;
     timer.enter_subsection ("linear_operator");
-    for(unsigned int i=0; i<reps; ++i) {
-      v1 *= (double)i;
-      b0 = lo*lo*lo*v;
-    }
+    for (unsigned int i=0; i<reps; ++i)
+      {
+        v1 *= (double)i;
+        b0 = lo*lo*lo*v;
+      }
     timer.leave_subsection();
   }
   {
     v1 = v;
     timer.enter_subsection ("blaze");
-    for(unsigned int i=0; i<reps; ++i) {
-      v1 *= (double)i;
-      static_cast<blaze::DynamicVector<double>&>(b1) = A*A*A*v;
-    }
+    for (unsigned int i=0; i<reps; ++i)
+      {
+        v1 *= (double)i;
+        static_cast<blaze::DynamicVector<double>&>(b1) = A*A*A*v;
+      }
     timer.leave_subsection();
   }
 }

@@ -52,11 +52,12 @@ int main(int argc, char *argv[])
 
   timer.enter_subsection ("raw");
   Vector<double> tmp(dof_handler.n_dofs());
-  for (unsigned int i = 0; i < reps; ++i) {
-    matrix.vmult(tmp, x);
-    x = tmp;
-    x /= x.l2_norm();
-  }
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      matrix.vmult(tmp, x);
+      x = tmp;
+      x /= x.l2_norm();
+    }
   timer.leave_subsection();
 
 #ifdef DEBUG
@@ -69,10 +70,11 @@ int main(int argc, char *argv[])
 
   timer.enter_subsection ("linear_operator");
   const auto op = linear_operator(matrix);
-  for (unsigned int i = 0; i < reps; ++i) {
-    op.vmult(x, x);
-    x /= x.l2_norm();
-  }
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      op.vmult(x, x);
+      x /= x.l2_norm();
+    }
   timer.leave_subsection();
 
 #ifdef DEBUG

@@ -191,7 +191,7 @@ void MatrixBenchmark::run ()
   timer.enter_subsection ("operator - STD");
   for (unsigned int j = 0; j<reps; ++j)
     {
-      static GrowingVectorMemory<Vector<double>> vector_memory;  
+      static GrowingVectorMemory<Vector<double>> vector_memory;
       Vector<double> *i = vector_memory.alloc();
       i->reinit(vector, /*bool omit_zeroing_entries =*/ true);
       matrix.vmult(*i, vector);

@@ -3,7 +3,8 @@
  * properly.
  */
 
-size_t memory_consumption() {
+size_t memory_consumption()
+{
   return sizeof(*this);
 }
 
@@ -12,7 +13,8 @@ size_t memory_consumption() {
  * value.
  */
 inline Eigen::Matrix< _Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols > &
-operator=(const _Scalar &s) {
+operator=(const _Scalar &s)
+{
   this->fill(s);
   return (*this);
 }
