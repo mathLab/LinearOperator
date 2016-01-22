@@ -29,8 +29,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i) {
     matrix.vmult(tmp, x);
     matrix.vmult(x, tmp);
-    tmp *= 3.;
-    x += tmp;
+    x.add(3., tmp);
     x /= x.l2_norm();
   }
   timer.leave_subsection();
