@@ -27,26 +27,10 @@
 
 #include <blaze/Math.h>
 
-using blaze::StaticVector;
-using blaze::DynamicVector;
+#include "blaze_plugin.h"
 
 using namespace dealii;
 
-class BVector : public  blaze::DynamicVector<double>
-{
-public:
-  BVector() {};
-
-  BVector(unsigned int n) :
-    DynamicVector<double>(n) {};
-
-  size_t memory_consumption()
-  {
-    return sizeof(*this);
-  };
-
-  typedef double value_type;
-};
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +41,7 @@ int main(int argc, char *argv[])
   unsigned int reps = std::atoi(argv[2]);
 
   // Define Blaze types
-  typedef blaze::CompressedMatrix<double,blaze::rowMajor> E_matrix;
+  typedef blaze::CompressedMatrix<double,blaze::rowMajor> BSparseMatrix;
 
   //  typedef Eigen::Triplet<double> T;
 
@@ -67,7 +51,7 @@ int main(int argc, char *argv[])
 
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
-  E_matrix A(n,n,band);
+  BSparseMatrix A(n,n,band);
   //  std::vector<T> entries;
   //  entries.reserve(n*band);
 
