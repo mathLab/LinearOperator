@@ -45,13 +45,6 @@ public:
     return sizeof(*this);
   };
 
-
-  blaze::DynamicVector<double> &operator&()
-  {
-    return static_cast<blaze::DynamicVector<double>&>(*this);
-  };
-
-
   typedef double value_type;
 };
 
