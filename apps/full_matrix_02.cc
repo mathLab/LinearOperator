@@ -5,14 +5,7 @@
 #include <deal.II/lac/linear_operator.h>
 #include <deal.II/lac/packaged_operation.h>
 
-// Blaze include. All in one.
-#include <blaze/Math.h>
-
-#define EIGEN_MATRIX_PLUGIN "eigen_plugin.h"
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
-
-#include "blaze_plugin.h"
+#include "wrappers.h"
 
 using namespace dealii;
 
@@ -74,13 +67,8 @@ int main(int argc, char *argv[])
 
   // Now do the same with Eigen. Let eigen interpret both x and the
   // matrix as its own objects
-
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >
-    Ematrix(&matrix(0,0), n, n);
-
-  typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> Evec;
-  
-  Evec Ex(n);
+  EFullMatrixShadow Ematrix(&matrix(0,0), n, n);
+  EVector Ex(n);
 
   for (unsigned int i = 0; i < n; ++i)
     Ex[i] = i;
@@ -100,30 +88,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < n; ++i)
     Ex[i] = i;
 
-  LinearOperator<Evec, Evec> Elo;
-  
-  Elo.vmult = [&Ematrix] (Evec &d, const Evec &s) {
-    d = Ematrix*s;
-  };
-  
-  Elo.vmult_add = [&Ematrix] (Evec &d, const Evec &s) {
-    d += Ematrix*s;
-  };
-
-  Elo.reinit_range_vector = [&Ematrix] (Evec &v, bool fast)
-  {
-    v.resize(Ematrix.rows());
-    if (fast == false)
-      v *= 0;
-  };
-
-  Elo.reinit_domain_vector = [&Ematrix] (Evec &v, bool fast)
-  {
-    v.resize(Ematrix.cols());
-    if (fast == false)
-      v *= 0;
-  };
-
+  auto Elo = eigen_lo(Ematrix);
   const auto Ereinit = Elo.reinit_range_vector;
   const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
   
@@ -140,12 +105,11 @@ int main(int argc, char *argv[])
 #endif
   
 
-  // Again, the same with Blaze. Let blaze interpret both the matrix as its own object
-  typedef blaze::CustomVector<double,blaze::aligned,blaze::unpadded,blaze::columnVector> BVec;
-  BVec Bx( &x(0), n);
-  blaze::CustomMatrix<double,blaze::aligned,blaze::unpadded,blaze::rowMajor>
-    Bmatrix( &matrix(0,0), n, n);
+  // Again, the same with Blaze.
+  BVector Bxx(n);
+  auto &Bx = static_cast<BVector::T&>(Bxx);
 
+  BFullMatrixShadow Bmatrix(&matrix(0,0), n, n);
   
   for (unsigned int i = 0; i < n; ++i)
     Bx[i] = i;
@@ -163,51 +127,21 @@ int main(int argc, char *argv[])
 #endif
 
   // Again the same, but wrap it under a linear operator
+  for (unsigned int i = 0; i < n; ++i)
+    Bx[i] = i;
   
-  LinearOperator<BVector, BVector> Blo;
-
-  Blo.vmult = [&Bmatrix] (BVector &d, const BVector &s) {
-    static_cast<BVector::T&>(d) = Bmatrix*s;
-  };
-
-  
-  Blo.vmult_add = [&Bmatrix] (BVector &d, const BVector &s) {
-    static_cast<BVector::T&>(d) += Bmatrix*s;
-  };
-  
-  Blo.reinit_range_vector = [&Bmatrix] (BVector &v, bool fast)
-  {
-    v.resize(Bmatrix.rows(), fast);
-    if (fast == false)
-      v *= 0;
-  };
-
-  Blo.reinit_domain_vector = [&Bmatrix] (BVector &v, bool fast)
-  {
-    v.resize(Bmatrix.columns(), fast);
-    if (fast == false)
-      v *= 0;
-  };
-
-
+  auto Blo = blaze_lo(Bmatrix);
   const auto Breinit = Blo.reinit_range_vector;
   const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
-  
-  BVector wrappedBx(n);
-  BVector::T &Bxx = static_cast<BVector::T&>(wrappedBx);
-
-  for (unsigned int i = 0; i < n; ++i)
-    Bxx[i] = i;
-  
   timer.enter_subsection("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bstep.vmult(wrappedBx,wrappedBx);
-      Bxx /= std::sqrt(blaze::trans(Bxx)*Bxx);
+      Bstep.vmult(Bxx,Bxx);
+      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
     }
   timer.leave_subsection();
   
 #ifdef DEBUG
-  std::cout << Bxx << std::endl;
+  std::cout << Bx << std::endl;
 #endif
 }

@@ -2,14 +2,7 @@
 #include <deal.II/lac/full_matrix.h>
 #include <deal.II/lac/linear_operator.h>
 
-// Blaze include. All in one.
-#include <blaze/Math.h>
-
-#define EIGEN_MATRIX_PLUGIN "eigen_plugin.h"
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
-
-#include "blaze_plugin.h"
+#include "wrappers.h"
 
 using namespace dealii;
 
@@ -67,14 +60,9 @@ int main(int argc, char *argv[])
 
   // Now do the same with Eigen. Let eigen interpret both x and the
   // matrix as its own objects
-
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >
-    Ematrix(&matrix(0,0), n, n);
-
-  typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> Evec;
+  EFullMatrixShadow Ematrix(&matrix(0,0), n, n);
+  EVector Ex(n);
   
-  Eigen::Map<Evec> Ex(&x(0), n);
-
   for (unsigned int i = 0; i < n; ++i)
     Ex[i] = i;
   
@@ -93,18 +81,11 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < n; ++i)
     Ex[i] = i;
 
-  LinearOperator<Evec, Evec> Elo;
-
-  Elo.vmult = [&Ematrix] (Evec &d, const Evec &s) {
-    d = Ematrix*s;
-  };
-
+  auto Elo = eigen_lo(Ematrix);
   timer.enter_subsection("eigen_lo");
-  Evec Etmp(n);
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Elo.vmult(Etmp, Ex);
-      Ex = Etmp;
+      Elo.vmult(Ex, Ex);
       Ex /= Ex.norm();
     }
   timer.leave_subsection();
@@ -114,13 +95,11 @@ int main(int argc, char *argv[])
 #endif
   
 
-  // Again, the same with Blaze. Let blaze interpret both x and the
-  // matrix as its own objects
-  typedef blaze::CustomVector<double,blaze::aligned,blaze::unpadded,blaze::columnVector> BVec;
-  BVec Bx( &x(0), n);
-  blaze::CustomMatrix<double,blaze::aligned,blaze::unpadded,blaze::rowMajor>
-    Bmatrix( &matrix(0,0), n, n);
+  // Again, the same with Blaze.
+  BVector Bxx(n);
+  auto &Bx = static_cast<BVector::T&>(Bxx);
 
+  BFullMatrixShadow Bmatrix(&matrix(0,0), n, n);
   
   for (unsigned int i = 0; i < n; ++i)
     Bx[i] = i;
@@ -139,24 +118,16 @@ int main(int argc, char *argv[])
 
   // Again the same, but wrap it under a linear operator
   
-  LinearOperator<BVector, BVector> Blo;
-
-  Blo.vmult = [&Bmatrix] (BVector &d, const BVector &s) {
-    static_cast<BVector::T&>(d) = Bmatrix*s;
-  };
-
-
-  BVector wrappedBx(n);
-  BVector::T &Bxx = static_cast<BVector::T&>(wrappedBx);
+  auto Blo = blaze_lo(Bmatrix);
 
   for (unsigned int i = 0; i < n; ++i)
-    Bxx[i] = i;
+    Bx[i] = i;
   
   timer.enter_subsection("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Blo.vmult(wrappedBx,wrappedBx);
-      Bxx /= std::sqrt(blaze::trans(Bxx)*Bxx);
+      Blo.vmult(Bxx,Bxx);
+      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
     }
   timer.leave_subsection();
   
