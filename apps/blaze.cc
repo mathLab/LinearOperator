@@ -25,9 +25,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <blaze/Math.h>
-
-#include "blaze_plugin.h"
+#include "wrappers.h"
 
 using namespace dealii;
 
@@ -40,11 +38,6 @@ int main(int argc, char *argv[])
   int band = std::min(n/10+2, 50);
   unsigned int reps = std::atoi(argv[2]);
 
-  // Define Blaze types
-  typedef blaze::CompressedMatrix<double,blaze::rowMajor> BSparseMatrix;
-
-  //  typedef Eigen::Triplet<double> T;
-
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
 
@@ -52,8 +45,6 @@ int main(int argc, char *argv[])
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
   BSparseMatrix A(n,n,band);
-  //  std::vector<T> entries;
-  //  entries.reserve(n*band);
 
   for (int i=0; i<n; ++i)
     for (int j=std::max(0,i-band/2); j<std::min(i+band/2, n); ++j)
@@ -75,30 +66,7 @@ int main(int argc, char *argv[])
   b0 = 0.0;
   b1 = 0.0;
 
-  LinearOperator<BVector, BVector> lo;
-
-
-
-  lo.vmult = [&A] (BVector &v, const BVector &u)
-  {
-    static_cast<blaze::DynamicVector<double>&>(v) = A*u;
-  };
-
-  lo.reinit_range_vector = [&A] (BVector &v, bool fast)
-  {
-    v.resize(A.rows());
-    if (fast == false)
-      v *= 0;
-  };
-
-
-  lo.reinit_domain_vector = [&A] (BVector &v, bool fast)
-  {
-    v.resize(A.columns ());
-    if (fast == false)
-      v *= 0;
-  };
-
+  auto lo = blaze_lo(A);
   {
     v1 = v;
     timer.enter_subsection ("linear_operator");

@@ -25,9 +25,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#define EIGEN_MATRIX_PLUGIN "eigen_plugin.h"
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
+#include "wrappers.h"
 
 using namespace dealii;
 
@@ -39,19 +37,14 @@ int main(int argc, char *argv[])
   int band = std::min(n/10+1, 50);
   unsigned int reps = std::atoi(argv[2]);
 
-  // Define Eigen types
-  typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> E_vector;
-  typedef Eigen::SparseMatrix<double, Eigen::ColMajor> E_matrix;
-  typedef Eigen::Ref<E_matrix> Ref_E_matrix;
-  typedef Eigen::Triplet<double> T;
-
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
 
 
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
-  E_matrix A(n,n);
+  ESparseMatrix A(n,n);
+  typedef Eigen::Triplet<double> T;
   std::vector<T> entries;
   entries.reserve(n*band);
 
@@ -62,45 +55,21 @@ int main(int argc, char *argv[])
   A.setFromTriplets(entries.begin(), entries.end());
   A.makeCompressed();
 
-  Ref_E_matrix RA(A);
-
   // Uncomment if you want to see the matrix
   // std::cout << A << std::endl;
 
-  E_vector v(n);
-  E_vector v1(n);
+  EVector v(n);
+  EVector v1(n);
 
   v = Eigen::ArrayXd::Random(n);
   v1 = Eigen::ArrayXd::Random(n);
 
-  E_vector b0(n);
-  E_vector b1(n);
+  EVector b0(n);
+  EVector b1(n);
   b0 = 0.0;
   b1 = 0.0;
 
-  LinearOperator<E_vector, E_vector> lo;
-
-
-
-  lo.vmult = [&RA] (E_vector &v, const E_vector &u)
-  {
-    v = RA*u;
-  };
-
-  lo.reinit_range_vector = [&A] (E_vector &v, bool fast)
-  {
-    v.resize(A.rows());
-    if (fast == false)
-      v *= 0;
-  };
-
-
-  lo.reinit_domain_vector = [&A] (E_vector &v, bool fast)
-  {
-    v.resize(A.cols());
-    if (fast == false)
-      v *= 0;
-  };
+  auto lo = eigen_lo(A);
 
   {
     v1 = v;
