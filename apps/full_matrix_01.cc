@@ -73,8 +73,7 @@ int main(int argc, char *argv[])
 
   typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> Evec;
   
-  Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> >
-    Ex(&x(0), n);
+  Eigen::Map<Evec> Ex(&x(0), n);
 
   for (unsigned int i = 0; i < n; ++i)
     Ex[i] = i;
