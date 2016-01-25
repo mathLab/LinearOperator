@@ -19,6 +19,12 @@ public:
     return sizeof(*this);
   };
 
+  void reinit(const BVector &v, bool fast) {
+    this->resize(v.size(), fast);
+    if(fast == false)
+      *this *= 0.0;
+  };
+
   typedef double value_type;
 
   typedef  blaze::DynamicVector<double> T;
