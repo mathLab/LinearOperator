@@ -11,6 +11,16 @@
 #include <deal.II/lac/vector.h>
 #include <deal.II/numerics/matrix_tools.h>
 
+// Blaze include. All in one.
+#include <blaze/Math.h>
+#include "blaze_plugin.h"
+
+#define EIGEN_MATRIX_PLUGIN "eigen_plugin.h"
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
+
+
 #include <iostream>
 
 using namespace dealii;
@@ -50,7 +60,7 @@ int main(int argc, char *argv[])
 
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
-  timer.enter_subsection ("raw");
+  timer.enter_subsection ("dealii_raw");
   Vector<double> tmp(dof_handler.n_dofs());
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -68,7 +78,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < x.size(); ++i)
     x[i] = i;
 
-  timer.enter_subsection ("linear_operator");
+  timer.enter_subsection ("dealii_lo");
   const auto op = linear_operator(matrix);
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -79,5 +89,114 @@ int main(int argc, char *argv[])
 
 #ifdef DEBUG
   std::cout << x << std::endl;
+#endif
+
+  // Now copy the sparse matrix to eigen and blaze
+  blaze::CompressedMatrix<double, blaze::rowMajor> Bmatrix(dof_handler.n_dofs(), dof_handler.n_dofs());
+  Eigen::SparseMatrix<double, Eigen::RowMajor> Ematrix(dof_handler.n_dofs(), dof_handler.n_dofs());
+
+  typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> EVector;
+  
+  Bmatrix.reserve(matrix.n_nonzero_elements());
+  Ematrix.reserve(matrix.n_nonzero_elements());
+
+  auto n = dof_handler.n_dofs();
+  
+  for(unsigned int i=0; i<n; ++i) {
+    for(auto it = matrix.begin(i); it != matrix.end(i); ++it) {
+      Bmatrix.append(i, it->column(), it->value());
+      Ematrix.insert(i, it->column()) = it->value();
+    }
+    Bmatrix.finalize(i);
+  }
+  Ematrix.makeCompressed();
+
+  // And create two vectors
+  BVector Bxx(n);
+  EVector Ex(n);
+
+  auto &Bx = static_cast<BVector::T&>(Bxx);
+  
+  // ============================================================ Blaze Raw  
+  for (unsigned int i = 0; i < x.size(); ++i)
+    Bx[i] = i;
+
+  timer.enter_subsection ("blaze_raw");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Bx = Bmatrix*Bx;
+      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+    }
+  timer.leave_subsection();
+
+#ifdef DEBUG
+  std::cout << Bx << std::endl;
+#endif
+
+  
+  // ============================================================ Eigen Raw  
+  for (unsigned int i = 0; i < x.size(); ++i)
+    Ex[i] = i;
+
+  timer.enter_subsection ("eigen_raw");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Ex = Ematrix*Ex;
+      Ex /= Ex.norm();
+    }
+  timer.leave_subsection();
+
+#ifdef DEBUG
+  std::cout << Ex << std::endl;
+#endif
+
+  
+  // ============================================================ Blaze LO
+  
+  LinearOperator<BVector, BVector> Blo;
+
+  Blo.vmult = [&Bmatrix] (BVector &d, const BVector &s) {
+     static_cast<BVector::T&>(d) = Bmatrix*s;
+  };
+
+  
+  for (unsigned int i = 0; i < x.size(); ++i)
+    Bx[i] = i;
+
+  timer.enter_subsection ("blaze_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Blo.vmult(Bxx,Bxx);
+      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+    }
+  timer.leave_subsection();
+
+#ifdef DEBUG
+  std::cout << Bx << std::endl;
+#endif
+
+  
+  // ============================================================ Eigen LO
+  
+  LinearOperator<EVector, EVector> Elo;
+  
+  Elo.vmult = [&Ematrix] (EVector &d, const EVector &s) {
+    d = Ematrix*s;
+  };
+
+  
+  for (unsigned int i = 0; i < x.size(); ++i)
+    Ex[i] = i;
+
+  timer.enter_subsection ("eigen_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Elo.vmult(Ex,Ex);
+      Ex /= Ex.norm();
+    }
+  timer.leave_subsection();
+
+#ifdef DEBUG
+  std::cout << Ex << std::endl;
 #endif
 }
