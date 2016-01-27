@@ -2,6 +2,7 @@
 #define __test_h_
 
 #include "wrappers.h"
+#include "blaze_plugin.h"
 
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/timer.h>
@@ -58,7 +59,21 @@ void reset_vector(VEC &x) {
   }
 }
 
+double norm(const Vector<double> &x) {
+  return x.l2_norm();
+}
 
 
+double norm(const BVector &x) {
+  return std::sqrt(blaze::trans(x)*x);
+}
+
+double norm(const EVector &x) {
+  return x.norm();
+}
+
+double norm(const blaze::DynamicVector<double, false> &x) {
+  return std::sqrt(blaze::trans(x)*x);
+}
 
 #endif

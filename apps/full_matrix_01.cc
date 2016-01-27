@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     {
       matrix.vmult(tmp, x);
       x = tmp;
-      x /= x.l2_norm();
+      x /= norm(x);
     }
   timer.leave_subsection();
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i)
     {
       op.vmult(x, x);
-      x /= x.l2_norm();
+      x /= norm(x);
     }
   timer.leave_subsection();
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i)
     {
       Bx = Bmatrix*Bx;
-      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+      Bx /= norm(Bx);
     }
   timer.leave_subsection();
 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i)
     {
       Blo.vmult(Bxx,Bxx);
-      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+      Bx /= norm(Bx);
     }
   timer.leave_subsection();
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i)
     {
       Ex = Ematrix*Ex;
-      Ex /= Ex.norm();
+      Ex /= norm(Ex);
     }
   timer.leave_subsection();
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
   for (unsigned int i = 0; i < reps; ++i)
     {
       Elo.vmult(Ex,Ex);
-      Ex /= Ex.norm();
+      Ex /= norm(Ex);
     }
   timer.leave_subsection();
 
