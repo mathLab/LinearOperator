@@ -1,20 +1,7 @@
-#include <deal.II/base/quadrature_lib.h>
-#include <deal.II/base/timer.h>
-#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_tools.h>
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/tria.h>
-#include <deal.II/lac/vector_memory.templates.h>
-
-#include <deal.II/lac/dynamic_sparsity_pattern.h>
-#include <deal.II/lac/linear_operator.h>
-#include <deal.II/lac/sparse_matrix.h>
-#include <deal.II/lac/vector.h>
-#include <deal.II/numerics/matrix_tools.h>
-#include <iostream>
-
 #include "wrappers.h"
+#include "test.h"
+
+#include <iostream>
 
 using namespace dealii;
 
@@ -25,153 +12,137 @@ int main(int argc, char *argv[])
   unsigned int refinement = std::atoi(argv[1]);
   unsigned int reps = std::atoi(argv[2]);
 
-  Triangulation<2> triangulation;
-  GridGenerator::hyper_cube(triangulation);
-  triangulation.refine_global(refinement);
-
-  FE_Q<2> fe(1);
-  DoFHandler<2> dof_handler;
-  dof_handler.initialize(triangulation, fe);
-
-  std::cout << "n:    " << dof_handler.n_dofs() << std::endl;
-  std::cout << "reps: " << reps << std::endl;
-
-  DynamicSparsityPattern dynamic_sparsity_pattern(dof_handler.n_dofs());
-  DoFTools::make_sparsity_pattern(dof_handler, dynamic_sparsity_pattern);
-  SparsityPattern sparsity_pattern;
-  sparsity_pattern.copy_from(dynamic_sparsity_pattern);
-
+  // Deal.II Sparse Matrix
   SparseMatrix<double> matrix;
-  matrix.reinit(sparsity_pattern);
+  create_sparse_matrix(matrix, refinement);
+  unsigned int n = matrix.m();
 
-  QGauss<2> quadrature(2);
-  MatrixCreator::create_laplace_matrix(dof_handler, quadrature, matrix);
+  // Blaze Sparse Matrix
+  BSparseMatrix Bmatrix;
+  copy(Bmatrix, matrix);
 
-  Vector<double> x(dof_handler.n_dofs());
-  for (unsigned int i = 0; i < x.size(); ++i)
-    x(i) = i;
+  // Eigen Sparse Matrix
+  ESparseMatrix Ematrix;
+  copy(Ematrix, matrix);
 
+  
+  // And create temporary vectors
+  Vector<double> x(n), ref(n);
+  
+  BVector Bxx(n);
+  auto &Bx = static_cast<BVector::T&>(Bxx);
+  
+  EVector Ex(n);
+
+  
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
+  // ============================================================ Start Output
+
+  std::cout << "Case 2 - SparseMatrix" << std::endl;
+  std::cout << "n:    " << n << std::endl;
+  std::cout << "reps: " << reps << std::endl;
+
+  // ============================================================ deal.II RAW
+  reset_vector(x);
+  
   timer.enter_subsection ("dealii_raw");
-  Vector<double> tmp(dof_handler.n_dofs());
+  Vector<double> tmp(n);
   for (unsigned int i = 0; i < reps; ++i)
     {
       matrix.vmult(tmp, x);
       matrix.vmult(x, tmp);
-      x.add(3., tmp);
-      x /= x.l2_norm();
+      matrix.vmult(tmp, x);
+      x = tmp;
+      x /= norm(x);
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << "DEBUG" << std::endl;
-  std::cout << x << std::endl;
-#endif
-
-  for (unsigned int i = 0; i < x.size(); ++i)
-    x[i] = i;
+  ref = x;
+  
+  // ============================================================ deal.II LO  
+  reset_vector(x);
 
   timer.enter_subsection ("dealii_lo");
-  const auto op = linear_operator(matrix);
-  const auto reinit = op.reinit_range_vector;
-  const auto step = (3.0 * identity_operator(reinit) + op) * op;
+  auto op = linear_operator(matrix);
+  op = op*op*op;
   for (unsigned int i = 0; i < reps; ++i)
     {
-      step.vmult(x, x);
-      x /= x.l2_norm();
+      op.vmult(x, x);
+      x /= norm(x);
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << x << std::endl;
-#endif
+  check_vector(ref,x);
 
+  // ============================================================ Blaze Raw
+  reset_vector(Bx);
   
-  // Now copy the sparse matrix to eigen and blaze
-  auto n = dof_handler.n_dofs();
-  
-  BSparseMatrix Bmatrix;
-  copy(Bmatrix, matrix);
-  ESparseMatrix Ematrix;
-  copy(Ematrix, matrix);
-
-  // And create two vectors
-  BVector Bxx(n);
-  EVector Ex(n);
-
-  auto &Bx = static_cast<BVector::T&>(Bxx);
-  
-  // ============================================================ Blaze Raw  
-  for (unsigned int i = 0; i < x.size(); ++i)
-    Bx[i] = i;
-
-  timer.enter_subsection ("blaze_raw");
+  timer.enter_subsection ("blaze_raw_a");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bx = (3*Bmatrix*Bx+Bmatrix*Bmatrix*Bx);
-      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+      Bx = Bmatrix*Bmatrix*Bmatrix*Bx;
+      Bx /= norm(Bx);
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Bx << std::endl;
-#endif
+  check_vector(ref,Bx);
 
-  
-  // ============================================================ Eigen Raw  
-  for (unsigned int i = 0; i < x.size(); ++i)
-    Ex[i] = i;
-
-  timer.enter_subsection ("eigen_raw");
-  for (unsigned int i = 0; i < reps; ++i)
-    {
-      Ex = (3*Ematrix*Ex+Ematrix*(Ematrix*Ex));
-      Ex /= Ex.norm();
-    }
-  timer.leave_subsection();
-
-#ifdef DEBUG
-  std::cout << Ex << std::endl;
-#endif
-
-  
   // ============================================================ Blaze LO
-  for (unsigned int i = 0; i < x.size(); ++i)
-    Bx[i] = i;
+  reset_vector(Bx);
   
   auto Blo = blaze_lo(Bmatrix);
-  const auto Breinit = Blo.reinit_range_vector;
-  const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
+  Blo = Blo*Blo*Blo;
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bstep.vmult(Bxx,Bxx);
-      Bx /= std::sqrt(blaze::trans(Bx)*Bx);
+      Blo.vmult(Bxx,Bxx);
+      Bx /= norm(Bx);
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Bx << std::endl;
-#endif
+  check_vector(ref,Bx);
 
+  // ============================================================ Eigen Raw a 
+  reset_vector(Ex);
+
+  if(n<300){
+    timer.enter_subsection ("eigen_raw_a");
+    for (unsigned int i = 0; i < reps; ++i)
+      {
+	Ex = Ematrix*Ematrix*Ematrix*Ex;
+	Ex /= norm(Ex);
+      }
+    timer.leave_subsection();
+  }
+
+  check_vector(ref,Ex);
   
+  // ============================================================ Eigen Raw b
+  reset_vector(Ex);
+  
+  timer.enter_subsection ("eigen_raw_b");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Ex = Ematrix*(Ematrix*(Ematrix*Ex));
+      Ex /= norm(Ex);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Ex);
+
   // ============================================================ Eigen LO
-  for (unsigned int i = 0; i < x.size(); ++i)
-    Ex[i] = i;
+  reset_vector(Ex);
   
   auto Elo = eigen_lo(Ematrix);
-  const auto Ereinit = Elo.reinit_range_vector;
-  const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
+  Elo = Elo*Elo*Elo;
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Estep.vmult(Ex,Ex);
-      Ex /= Ex.norm();
+      Elo.vmult(Ex,Ex);
+      Ex /= norm(Ex);
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Ex << std::endl;
-#endif
+  check_vector(ref,Ex);
 }

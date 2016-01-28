@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
   EFullMatrixShadow Ematrix(&matrix(0,0), n, n);
 
   // And create temporary vectors
-  Vector<double> x(n);
+  Vector<double> x(n), ref(n);
   
   BVector Bxx(n);
   auto &Bx = static_cast<BVector::T&>(Bxx);
@@ -51,10 +51,7 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << "DEBUG" << std::endl;
-  std::cout << x << std::endl;
-#endif
+  ref = x;
   
   // ============================================================ deal.II LO  
   reset_vector(x);
@@ -68,9 +65,7 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << x << std::endl;
-#endif
+  check_vector(ref,x);
   
   // ============================================================ Blaze Raw  
   reset_vector(Bx);
@@ -83,9 +78,7 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Bx << std::endl;
-#endif
+  check_vector(ref,Bx);
 
   // ============================================================ Blaze LO
   reset_vector(Bx);
@@ -99,9 +92,7 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Bx << std::endl;
-#endif
+  check_vector(ref,Bx);
   
   // ============================================================ Eigen Raw  
   reset_vector(Ex);
@@ -114,9 +105,7 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Ex << std::endl;
-#endif
+  check_vector(ref,Ex);
 
   // ============================================================ Eigen LO
   reset_vector(Ex);
@@ -130,7 +119,5 @@ int main(int argc, char *argv[])
     }
   timer.leave_subsection();
 
-#ifdef DEBUG
-  std::cout << Ex << std::endl;
-#endif
+  check_vector(ref,Ex);
 }

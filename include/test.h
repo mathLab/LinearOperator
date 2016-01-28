@@ -76,4 +76,23 @@ double norm(const blaze::DynamicVector<double, false> &x) {
   return std::sqrt(blaze::trans(x)*x);
 }
 
+template<typename VEC1, typename VEC2>
+void check_vector(const VEC1 &ref, const VEC2 &src) {
+  double err = 0;
+  for(unsigned int i=0; i<ref.size(); ++i) {
+    err += (ref[i]-src[i])*(ref[i]-src[i]);
+  }
+  err = std::sqrt(err);
+  if(err > 1e-10) {
+    std::cout << "L2 Error: " << err << std::endl;
+    
+#ifdef DEBUG
+    std::cout << "DEBUG left" << std::endl;
+    std::cout << ref << std::endl;
+    std::cout << "DEBUG right" << std::endl;
+    std::cout << src << std::endl;
+#endif
+  }
+}
+
 #endif
