@@ -31,7 +31,7 @@ function print_header
   echo ""
   printf "%10s %10s %20s %20s %20s %20s %20s %20s %20s %20s \n" \
          "n" "reps" "DEAL_RAW" "DEAL_SMA" "DEAL_LOP" "EIGE_RAW" "EIGE_SMA" "EIGE_LOP" "BLAZ_RAW" "BLAZ_LOP"
-  echo "n reps DEAL_RAW DEAL_SMA DEAL_LOP EIGE_RAW EIGE_SMA EIGE_LOP BLAZ_RAW BLAZ_LOP" >> $OUTNAME
+  echo "n reps DEAL_RAW DEAL_SMA DEAL_LOP EIGE_RAW EIGE_SMA EIGE_LOP BLAZ_RAW BLAZ_LOP" >> $OUT_NAME
 }
 
 function extract_value()
@@ -75,7 +75,7 @@ function step()
           sed 's#n:    ##')
 
   EIGE_RAWW=$( echo "$EIGE_RAWW*100" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
-  EIGE_RAW=$( echo "$EIGE_RAW+$EIGE_RAWW*" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
+  EIGE_RAW=$( echo "$EIGE_RAW+$EIGE_RAWW" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
   
   printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f\n" \
          $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
