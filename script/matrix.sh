@@ -72,8 +72,8 @@ function step()
           grep "n:    " |\
           sed 's#n:    ##')
 
-  EIGE_RAWW=$( echo "$EIGE_RAWW*100" | bc -l )
-          
+  EIGE_RAWW=$( echo "$EIGE_RAWW*100" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
+
   printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f %20f\n" \
          $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_RAWW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
   
