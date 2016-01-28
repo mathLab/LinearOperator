@@ -49,8 +49,9 @@ int main(int argc, char *argv[])
   y = x;
   z = x;
   
-  timer.enter_subsection ("dealii_raw");
   Vector<double> tmp(n);
+  
+  timer.enter_subsection ("dealii_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
       matrix.vmult(tmp, x);
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
   reset_vector(x);
 
   const auto step = linear_operator(matrix) * (x + y + z);
+  
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -100,6 +102,7 @@ int main(int argc, char *argv[])
   auto zz = PackagedOperation<BVector>(Bzz);
   
   const auto Bstep = blaze_lo(Bmatrix) * (xx + yy + zz);
+  
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -132,8 +135,9 @@ int main(int argc, char *argv[])
   auto yyy = PackagedOperation<EVector>(Ey);
   auto zzz = PackagedOperation<EVector>(Ez);
   
-  timer.enter_subsection("eigen_lo");
   const auto Estep = eigen_lo(Ematrix) * (xxx + yyy + zzz);
+  
+  timer.enter_subsection("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       Ex = Estep;

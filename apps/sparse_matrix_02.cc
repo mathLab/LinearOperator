@@ -46,8 +46,9 @@ int main(int argc, char *argv[])
   // ============================================================ deal.II RAW
   reset_vector(x);
   
-  timer.enter_subsection ("dealii_raw");
   Vector<double> tmp(n);
+  
+  timer.enter_subsection ("dealii_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
       matrix.vmult(tmp, x);
@@ -63,9 +64,10 @@ int main(int argc, char *argv[])
   // ============================================================ deal.II LO  
   reset_vector(x);
 
-  timer.enter_subsection ("dealii_lo");
   auto op = linear_operator(matrix);
   op = op*op*op;
+  
+  timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       op.vmult(x, x);
@@ -93,6 +95,7 @@ int main(int argc, char *argv[])
   
   auto Blo = blaze_lo(Bmatrix);
   Blo = Blo*Blo*Blo;
+  
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -134,6 +137,7 @@ int main(int argc, char *argv[])
   
   auto Elo = eigen_lo(Ematrix);
   Elo = Elo*Elo*Elo;
+  
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
