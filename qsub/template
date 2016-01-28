@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#PBS -N ns
+#PBS -l mem=320GB
+#PBS -l walltime=00:05:00
+#PBS -l nodes=OOOOO:ppn=20
+#PBS -q regular
+#PBS -M mbarde@sissa.it
+#PBS -m abe
+
+nodes=OOOOO
+BUILD_DIR="build_"$nodes
+OUTPUT="../output_04.data"
+
+cd "$PBS_O_WORKDIR"
+cd ..
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
+source /home/mbarde/opt/module.conf
+
+let p=$nodes*20
+
+cmake ..
+make -j$p step-32
+
+
+mpirun -np $p ./step-32 ../apps/step-32.prm
+RESULT="$( mpirun -np $p ./step-32 ../apps/step-32.prm)"
+
+DOF=$(	echo "$RESULT" |\
+	grep "Number of degrees of freedom" |\
+	cut -d" "  -f6| xargs)
+
+LOPE=$( echo "$RESULT" |\
+	grep "LO" |\ 
+	cut -d'|' -f4 |\ 
+	sed 's#s###'| xargs)
+
+RAW=$( echo "$RESULT" |\
+	grep "raw" |\
+	head -1 |\
+        cut -d'|' -f4 |\
+        sed 's#s###'| xargs)
+
+RAWO=$( echo "$RESULT" |\
+        grep "raw opt" |\
+        cut -d'|' -f4 |\
+        sed 's#s###'| xargs)
+
+echo $p" "$DOF" "$LOPE" "$RAW" "$RAWO >> ${OUTPUT}_bkp
+printf "%10d %10d %20f %20f %20f\n" $p $DOF $LOPE $RAW $RAWO >> ${OUTPUT}
