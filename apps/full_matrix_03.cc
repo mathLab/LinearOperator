@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
-
+  
   check_vector(ref,Bx);
 
   // ============================================================ Blaze LO
@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
   const auto Breinit = Blo.reinit_range_vector;
   const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
   
-  timer.enter_subsection ("blaze_low");
+  timer.enter_subsection ("blaze_lo");
+  for (unsigned int i = 0; i < reps; ++i)
     {
       Bstep.vmult(Bxx,Bxx);
       Bx /= norm(Bx);
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
-
+  
   check_vector(ref,Ex);
 
   // ============================================================ Eigen LO
@@ -128,6 +129,6 @@ int main(int argc, char *argv[])
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
-
+  
   check_vector(ref,Ex);
 }
