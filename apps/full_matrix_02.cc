@@ -104,9 +104,10 @@ int main(int argc, char *argv[])
   // ============================================================ Eigen Raw a 
   reset_vector(Ex);
   
-  if(n<300) {
-    timer.enter_subsection ("eigen_raw");
-    for (unsigned int i = 0; i < reps; ++i)
+  if(n<250)
+  {
+    timer.enter_subsection ("eigen_aaa");
+    for (unsigned int i = 0; i < 100; ++i)
       {
 	Ex = Ematrix*Ematrix*Ematrix*Ex;
 	Ex /= norm(Ex);
