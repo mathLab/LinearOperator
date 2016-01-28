@@ -60,6 +60,22 @@ int main(int argc, char *argv[])
 
   ref = x;
   
+  // ============================================================ deal.II RAW SMART  
+  reset_vector(x);
+
+  timer.enter_subsection ("dealii_smart");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      tmp = x;
+      tmp += y;
+      tmp += z;
+      matrix.vmult(x,tmp);
+      x /= norm(x);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,x);
+  
   // ============================================================ deal.II LO  
   reset_vector(x);
 

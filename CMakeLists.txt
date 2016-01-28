@@ -55,7 +55,7 @@ FOREACH(_build_type ${_d2_build_types})
     	SET(_exe "${_app_name}${_p}")
     	MESSAGE("-- Configuring executable ${_exe}")
     	ADD_EXECUTABLE(${_exe} ${_main})
-	DEAL_II_SETUP_TARGET(${_exe})
+	DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
     ENDFOREACH()
 
   ENDIF()
