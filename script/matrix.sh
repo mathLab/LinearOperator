@@ -23,13 +23,15 @@ clear
 function print_header
 {
   local EXECUTABLE=$1
-
+  local OUT_NAME=$2
+  
   echo ""
   echo ""
   echo "$EXECUTABLE:"
   echo ""
-  printf "%10s %10s %20s %20s %20s %20s %20s %20s %20s %20s %20s\n" \
-         "n" "reps" "DEAL_RAW" "DEAL_SMA" "DEAL_LOP" "EIGE_RAW" "EIGE_RAW" "EIGE_SMA" "EIGE_LOP" "BLAZ_RAW" "BLAZ_LOP"
+  printf "%10s %10s %20s %20s %20s %20s %20s %20s %20s %20s \n" \
+         "n" "reps" "DEAL_RAW" "DEAL_SMA" "DEAL_LOP" "EIGE_RAW" "EIGE_SMA" "EIGE_LOP" "BLAZ_RAW" "BLAZ_LOP"
+  echo "n reps DEAL_RAW DEAL_SMA DEAL_LOP EIGE_RAW EIGE_SMA EIGE_LOP BLAZ_RAW BLAZ_LOP" >> $OUTNAME
 }
 
 function extract_value()
@@ -73,11 +75,12 @@ function step()
           sed 's#n:    ##')
 
   EIGE_RAWW=$( echo "$EIGE_RAWW*100" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
-
-  printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f %20f\n" \
-         $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_RAWW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
+  EIGE_RAW=$( echo "$EIGE_RAW+$EIGE_RAWW*" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
   
-  echo $DOF" "$REPS" "$DEAL_RAW" "$DEAL_SMA" "$DEAL_LOP" "$EIGE_RAW" "$EIGE_RAWW" "$EIGE_SMA" "$EIGE_LOP" "$BLAZ_RAW" "$BLAZ_LOP >> $OUT_NAME
+  printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f\n" \
+         $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
+  
+  echo $DOF" "$REPS" "$DEAL_RAW" "$DEAL_SMA" "$DEAL_LOP" "$EIGE_RAW" "$EIGE_SMA" "$EIGE_LOP" "$BLAZ_RAW" "$BLAZ_LOP >> $OUT_NAME
 }
 
 function plot
@@ -109,44 +112,44 @@ done
 
 # # Full Matrices
 # 
-# print_header full_matrix_01
+# print_header full_matrix_01 ${OUTPUT_DIR}/"full_matrix_01.data"
 # for i in `seq 1 10`; do
 #   step full_matrix_01 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_01.data"
 # done
 # 
-print_header full_matrix_02
+print_header full_matrix_02 ${OUTPUT_DIR}/"full_matrix_02.data"
 for i in `seq 1 10`; do
   step full_matrix_02 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_02.data"
 done
 # 
-# print_header full_matrix_03
+# print_header full_matrix_03 ${OUTPUT_DIR}/"full_matrix_03.data"
 # for i in `seq 1 10`; do
 #   step full_matrix_03 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_03.data"
 # done
 # 
-# print_header full_matrix_04
+# print_header full_matrix_04 ${OUTPUT_DIR}/"full_matrix_04.data"
 # for i in `seq 1 10`; do
 #   step full_matrix_04 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_04.data"
 # done
 # 
 # # Sparse Matrices
 # 
-# print_header sparse_matrix_01
+# print_header sparse_matrix_01 ${OUTPUT_DIR}/"sparse_matrix_01.data"
 # for i in `seq 1 8`; do
 #   step sparse_matrix_01 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_01.data"
 # done
 
-print_header sparse_matrix_02
+print_header sparse_matrix_02 ${OUTPUT_DIR}/"sparse_matrix_02.data"
 for i in `seq 1 8`; do
   step sparse_matrix_02 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_02.data"
 done
 
-# print_header sparse_matrix_03
+# print_header sparse_matrix_03 ${OUTPUT_DIR}/"sparse_matrix_03.data"
 # for i in `seq 1 8`; do
 #   step sparse_matrix_03 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_03.data"
 # done
 # 
-# print_header sparse_matrix_04
+# print_header sparse_matrix_04 ${OUTPUT_DIR}/"sparse_matrix_04.data"
 # for i in `seq 1 8`; do
 #   step sparse_matrix_04 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_04.data"
 # done
