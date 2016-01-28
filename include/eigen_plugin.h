@@ -24,9 +24,9 @@ operator=(const _Scalar &s)
  */
 inline
 void reinit(const Eigen::Matrix< _Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols > &v,
-	    bool fast)
+            bool fast)
 {
   this->conservativeResize(v.rows(), v.cols());
-  if(fast == false)
+  if (fast == false)
     this->fill(0.0);
 }

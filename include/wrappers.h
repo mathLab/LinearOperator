@@ -30,32 +30,38 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor> EVector;
 /**
  * Copy from deal.II to blaze sparse matrix.
  */
-void copy(BSparseMatrix &Bmatrix, const dealii::SparseMatrix<double> &matrix) {
+void copy(BSparseMatrix &Bmatrix, const dealii::SparseMatrix<double> &matrix)
+{
   auto n = matrix.m();
   Bmatrix.resize(n,n);
   Bmatrix.reserve(matrix.n_nonzero_elements());
 
-  for(unsigned int i=0; i<n; ++i) {
-    for(auto it = matrix.begin(i); it != matrix.end(i); ++it) {
-      Bmatrix.append(i, it->column(), it->value());
+  for (unsigned int i=0; i<n; ++i)
+    {
+      for (auto it = matrix.begin(i); it != matrix.end(i); ++it)
+        {
+          Bmatrix.append(i, it->column(), it->value());
+        }
+      Bmatrix.finalize(i);
     }
-    Bmatrix.finalize(i);
-  }
 }
 
 /**
  * Copy from deal.II to eigen sparse matrix.
  */
-void copy(ESparseMatrix &Ematrix, const dealii::SparseMatrix<double> &matrix) {
+void copy(ESparseMatrix &Ematrix, const dealii::SparseMatrix<double> &matrix)
+{
   auto n = matrix.m();
   Ematrix.resize(n,n);
   Ematrix.reserve(matrix.n_nonzero_elements());
 
-  for(unsigned int i=0; i<n; ++i) {
-    for(auto it = matrix.begin(i); it != matrix.end(i); ++it) {
-      Ematrix.insert(i, it->column()) = it->value();
+  for (unsigned int i=0; i<n; ++i)
+    {
+      for (auto it = matrix.begin(i); it != matrix.end(i); ++it)
+        {
+          Ematrix.insert(i, it->column()) = it->value();
+        }
     }
-  }
   Ematrix.makeCompressed();
 }
 
@@ -64,18 +70,21 @@ void copy(ESparseMatrix &Ematrix, const dealii::SparseMatrix<double> &matrix) {
  * object.
  */
 template<typename MAT>
-dealii::LinearOperator<BVector, BVector> blaze_lo(MAT &Bmatrix) {
+dealii::LinearOperator<BVector, BVector> blaze_lo(MAT &Bmatrix)
+{
   dealii::LinearOperator<BVector, BVector> Blo;
-  
-  Blo.vmult = [&Bmatrix] (BVector &d, const BVector &s) {
-    static_cast<BVector::T&>(d) = Bmatrix*s;
+
+  Blo.vmult = [&Bmatrix] (BVector &d, const BVector &s)
+  {
+    static_cast<BVector::T &>(d) = Bmatrix*s;
   };
 
-  
-  Blo.vmult_add = [&Bmatrix] (BVector &d, const BVector &s) {
-    static_cast<BVector::T&>(d) += Bmatrix*s;
+
+  Blo.vmult_add = [&Bmatrix] (BVector &d, const BVector &s)
+  {
+    static_cast<BVector::T &>(d) += Bmatrix*s;
   };
-  
+
   Blo.reinit_range_vector = [&Bmatrix] (BVector &v, bool fast)
   {
     v.resize(Bmatrix.rows(), fast);
@@ -98,18 +107,21 @@ dealii::LinearOperator<BVector, BVector> blaze_lo(MAT &Bmatrix) {
  * object.
  */
 template<typename MAT>
-dealii::LinearOperator<EVector, EVector> eigen_lo(MAT &Ematrix) {
+dealii::LinearOperator<EVector, EVector> eigen_lo(MAT &Ematrix)
+{
   dealii::LinearOperator<EVector, EVector> Elo;
-  
-  Elo.vmult = [&Ematrix] (EVector &d, const EVector &s) {
+
+  Elo.vmult = [&Ematrix] (EVector &d, const EVector &s)
+  {
     d = Ematrix*s;
   };
 
-  
-  Elo.vmult_add = [&Ematrix] (EVector &d, const EVector &s) {
+
+  Elo.vmult_add = [&Ematrix] (EVector &d, const EVector &s)
+  {
     d += Ematrix*s;
   };
-  
+
   Elo.reinit_range_vector = [&Ematrix] (EVector &v, bool fast)
   {
     v.resize(Ematrix.rows(), fast);

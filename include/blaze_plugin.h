@@ -19,9 +19,10 @@ public:
     return sizeof(*this);
   };
 
-  void reinit(const BVector &v, bool fast) {
+  void reinit(const BVector &v, bool fast)
+  {
     this->resize(v.size(), fast);
-    if(fast == false)
+    if (fast == false)
       *this *= 0.0;
   };
 

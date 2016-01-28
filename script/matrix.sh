@@ -72,7 +72,7 @@ function step()
           grep "n:    " |\
           sed 's#n:    ##')
 
-  EIGE_RAWW=$( echo $EIGE_RAWW*100 | bc -l)
+  EIGE_RAWW=$( echo "$EIGE_RAWW*100" | bc -l )
           
   printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f %20f\n" \
          $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_RAWW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
@@ -107,49 +107,49 @@ do
   ./$FILE 4 4 2>&1 >/dev/null 
 done
 
-# Full Matrices
-
-print_header full_matrix_01
-for i in `seq 1 10`; do
-  step full_matrix_01 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_01.data"
-done
-
+# # Full Matrices
+# 
+# print_header full_matrix_01
+# for i in `seq 1 10`; do
+#   step full_matrix_01 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_01.data"
+# done
+# 
 print_header full_matrix_02
 for i in `seq 1 10`; do
   step full_matrix_02 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_02.data"
 done
-
-print_header full_matrix_03
-for i in `seq 1 10`; do
-  step full_matrix_03 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_03.data"
-done
-
-print_header full_matrix_04
-for i in `seq 1 10`; do
-  step full_matrix_04 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_04.data"
-done
-
-# Sparse Matrices
-
-print_header sparse_matrix_01
-for i in `seq 1 8`; do
-  step sparse_matrix_01 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_01.data"
-done
+# 
+# print_header full_matrix_03
+# for i in `seq 1 10`; do
+#   step full_matrix_03 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_03.data"
+# done
+# 
+# print_header full_matrix_04
+# for i in `seq 1 10`; do
+#   step full_matrix_04 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_04.data"
+# done
+# 
+# # Sparse Matrices
+# 
+# print_header sparse_matrix_01
+# for i in `seq 1 8`; do
+#   step sparse_matrix_01 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_01.data"
+# done
 
 print_header sparse_matrix_02
 for i in `seq 1 8`; do
   step sparse_matrix_02 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_02.data"
 done
 
-print_header sparse_matrix_03
-for i in `seq 1 8`; do
-  step sparse_matrix_03 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_03.data"
-done
-
-print_header sparse_matrix_04
-for i in `seq 1 8`; do
-  step sparse_matrix_04 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_04.data"
-done
+# print_header sparse_matrix_03
+# for i in `seq 1 8`; do
+#   step sparse_matrix_03 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_03.data"
+# done
+# 
+# print_header sparse_matrix_04
+# for i in `seq 1 8`; do
+#   step sparse_matrix_04 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_04.data"
+# done
 
 plot "full_matrix_01"
 plot "full_matrix_02"

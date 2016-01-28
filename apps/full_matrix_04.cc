@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
   Vector<double> x(n), ref(n), y(n), z(n);
 
   BVector Bxx(n), Byy(n), Bzz(n);
-  auto &Bx = static_cast<BVector::T&>(Bxx);
-  auto &By = static_cast<BVector::T&>(Byy);
-  auto &Bz = static_cast<BVector::T&>(Bzz);
-  
+  auto &Bx = static_cast<BVector::T &>(Bxx);
+  auto &By = static_cast<BVector::T &>(Byy);
+  auto &Bz = static_cast<BVector::T &>(Bzz);
+
   EVector Ex(n), Ey(n), Ez(n);
 
-  
+
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
   // ============================================================ Start Output
@@ -39,14 +39,14 @@ int main(int argc, char *argv[])
   std::cout << "Case 4 - FullMatrix" << std::endl;
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
-  
+
   // ============================================================ deal.II RAW
   reset_vector(x);
   y = x;
   z = x;
-  
+
   Vector<double> tmp(n);
-  
+
   timer.enter_subsection ("dealii_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   ref = x;
-  
-  // ============================================================ deal.II RAW SMART  
+
+  // ============================================================ deal.II RAW SMART
   reset_vector(x);
 
   timer.enter_subsection ("dealii_smart");
@@ -75,12 +75,12 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,x);
-  
-  // ============================================================ deal.II LO  
+
+  // ============================================================ deal.II LO
   reset_vector(x);
 
   const auto step = linear_operator(matrix) * (x + y + z);
-  
+
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   reset_vector(Bx);
   By = Bx;
   Bz = Bx;
-  
+
   timer.enter_subsection ("blaze_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -112,9 +112,9 @@ int main(int argc, char *argv[])
   auto xx = PackagedOperation<BVector>(Bxx);
   auto yy = PackagedOperation<BVector>(Byy);
   auto zz = PackagedOperation<BVector>(Bzz);
-  
+
   const auto Bstep = blaze_lo(Bmatrix) * (xx + yy + zz);
-  
+
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
   reset_vector(Ex);
   Ey = Ex;
   Ez = Ex;
-  
+
   timer.enter_subsection ("eigen_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -142,13 +142,13 @@ int main(int argc, char *argv[])
 
   // ============================================================ Eigen LO
   reset_vector(Ex);
-  
+
   auto xxx = PackagedOperation<EVector>(Ex);
   auto yyy = PackagedOperation<EVector>(Ey);
   auto zzz = PackagedOperation<EVector>(Ez);
-  
+
   const auto Estep = eigen_lo(Ematrix) * (xxx + yyy + zzz);
-  
+
   timer.enter_subsection("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {

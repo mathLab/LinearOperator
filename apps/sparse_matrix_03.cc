@@ -25,16 +25,16 @@ int main(int argc, char *argv[])
   ESparseMatrix Ematrix;
   copy(Ematrix, matrix);
 
-  
+
   // And create temporary vectors
   Vector<double> x(n), ref(n);
-  
+
   BVector Bxx(n);
-  auto &Bx = static_cast<BVector::T&>(Bxx);
-  
+  auto &Bx = static_cast<BVector::T &>(Bxx);
+
   EVector Ex(n);
 
-  
+
   TimerOutput timer(std::cout, TimerOutput::summary, TimerOutput::wall_times);
 
   // ============================================================ Start Output
@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
 
   // ============================================================ deal.II RAW
   reset_vector(x);
-  
+
   Vector<double> tmp(n);
-  
+
   timer.enter_subsection ("dealii_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -59,14 +59,14 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   ref = x;
-  
-  // ============================================================ deal.II LO  
+
+  // ============================================================ deal.II LO
   reset_vector(x);
 
   const auto op = linear_operator(matrix);
   const auto reinit = op.reinit_range_vector;
   const auto step = (3.0 * identity_operator(reinit) + op) * op;
-  
+
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
   // ============================================================ Blaze Raw
   reset_vector(Bx);
-  
+
   timer.enter_subsection ("blaze_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -87,16 +87,16 @@ int main(int argc, char *argv[])
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
-  
+
   check_vector(ref,Bx);
 
   // ============================================================ Blaze LO
   reset_vector(Bx);
-  
+
   const auto Blo = blaze_lo(Bmatrix);
   const auto Breinit = Blo.reinit_range_vector;
   const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
-  
+
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 
   // ============================================================ Eigen Raw
   reset_vector(Ex);
-  
+
   timer.enter_subsection ("eigen_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -117,16 +117,16 @@ int main(int argc, char *argv[])
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
-  
+
   check_vector(ref,Ex);
 
   // ============================================================ Eigen LO
   reset_vector(Ex);
-  
+
   const auto Elo = eigen_lo(Ematrix);
   const auto Ereinit = Elo.reinit_range_vector;
   const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
-  
+
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
@@ -134,6 +134,6 @@ int main(int argc, char *argv[])
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
-  
+
   check_vector(ref,Ex);
 }
