@@ -111,48 +111,48 @@ do
 done
 
 # # Full Matrices
-# 
-# print_header full_matrix_01 ${OUTPUT_DIR}/"full_matrix_01.data"
-# for i in `seq 1 10`; do
-#   step full_matrix_01 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_01.data"
-# done
-# 
+
+print_header full_matrix_01 ${OUTPUT_DIR}/"full_matrix_01.data"
+for i in `seq 1 10`; do
+  step full_matrix_01 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_01.data"
+done
+
 print_header full_matrix_02 ${OUTPUT_DIR}/"full_matrix_02.data"
 for i in `seq 1 10`; do
   step full_matrix_02 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_02.data"
 done
-# 
-# print_header full_matrix_03 ${OUTPUT_DIR}/"full_matrix_03.data"
-# for i in `seq 1 10`; do
-#   step full_matrix_03 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_03.data"
-# done
-# 
-# print_header full_matrix_04 ${OUTPUT_DIR}/"full_matrix_04.data"
-# for i in `seq 1 10`; do
-#   step full_matrix_04 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_04.data"
-# done
-# 
-# # Sparse Matrices
-# 
-# print_header sparse_matrix_01 ${OUTPUT_DIR}/"sparse_matrix_01.data"
-# for i in `seq 1 8`; do
-#   step sparse_matrix_01 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_01.data"
-# done
+
+print_header full_matrix_03 ${OUTPUT_DIR}/"full_matrix_03.data"
+for i in `seq 1 10`; do
+  step full_matrix_03 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_03.data"
+done
+
+print_header full_matrix_04 ${OUTPUT_DIR}/"full_matrix_04.data"
+for i in `seq 1 10`; do
+  step full_matrix_04 $((2**$i)) 10000 ${OUTPUT_DIR}/"full_matrix_04.data"
+done
+
+# Sparse Matrices
+
+print_header sparse_matrix_01 ${OUTPUT_DIR}/"sparse_matrix_01.data"
+for i in `seq 1 8`; do
+  step sparse_matrix_01 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_01.data"
+done
 
 print_header sparse_matrix_02 ${OUTPUT_DIR}/"sparse_matrix_02.data"
 for i in `seq 1 8`; do
   step sparse_matrix_02 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_02.data"
 done
 
-# print_header sparse_matrix_03 ${OUTPUT_DIR}/"sparse_matrix_03.data"
-# for i in `seq 1 8`; do
-#   step sparse_matrix_03 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_03.data"
-# done
-# 
-# print_header sparse_matrix_04 ${OUTPUT_DIR}/"sparse_matrix_04.data"
-# for i in `seq 1 8`; do
-#   step sparse_matrix_04 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_04.data"
-# done
+print_header sparse_matrix_03 ${OUTPUT_DIR}/"sparse_matrix_03.data"
+for i in `seq 1 8`; do
+  step sparse_matrix_03 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_03.data"
+done
+
+print_header sparse_matrix_04 ${OUTPUT_DIR}/"sparse_matrix_04.data"
+for i in `seq 1 8`; do
+  step sparse_matrix_04 $i 10000 ${OUTPUT_DIR}/"sparse_matrix_04.data"
+done
 
 plot "full_matrix_01"
 plot "full_matrix_02"
