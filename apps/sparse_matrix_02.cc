@@ -65,12 +65,11 @@ int main(int argc, char *argv[])
   reset_vector(x);
 
   const auto op = linear_operator(matrix);
-  const auto step = op * op * op * x;
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      step.apply(x);
+      x = op * op * op * x;
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -94,12 +93,11 @@ int main(int argc, char *argv[])
   reset_vector(Bx);
 
   const auto Blo = blaze_lo(Bmatrix);
-  const auto Bstep = Blo * Blo * Blo * Bxx;
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bstep.apply(Bxx);
+      Bxx = Blo * Blo * Blo * Bxx;
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -139,12 +137,11 @@ int main(int argc, char *argv[])
   reset_vector(Ex);
 
   const auto Elo = eigen_lo(Ematrix);
-  const auto Estep = Elo * Elo * Elo * Ex;
 
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Estep.apply(Ex);
+      Ex = Elo * Elo * Elo * Ex;
       Ex /= norm(Ex);
     }
   timer.leave_subsection();

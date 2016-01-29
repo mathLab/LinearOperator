@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      step.apply(x);
+      x = op * x;
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bstep.apply(Bxx);
+      Bxx = Blo * Bxx;
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Estep.apply(Ex);
+      Ex = Elo * Ex;
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
