@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#PBS -N ns
-#PBS -l mem=320GB
+#PBS -N step-32
 #PBS -l walltime=00:05:00
 #PBS -l nodes=OOOOO:ppn=20
 #PBS -q regular
@@ -10,7 +9,7 @@
 
 nodes=OOOOO
 BUILD_DIR="build_"$nodes
-OUTPUT="../output_04.data"
+OUTPUT="../output_09.data"
 
 cd "$PBS_O_WORKDIR"
 cd ..
@@ -32,10 +31,10 @@ DOF=$(	echo "$RESULT" |\
 	grep "Number of degrees of freedom" |\
 	cut -d" "  -f6| xargs)
 
-LOPE=$( echo "$RESULT" |\
-	grep "LO" |\ 
-	cut -d'|' -f4 |\ 
-	sed 's#s###'| xargs)
+LOP=$( echo "$RESULT" |\
+        grep "LO" |\
+        cut -d'|' -f4 |\
+        sed 's#s###'| xargs)
 
 RAW=$( echo "$RESULT" |\
 	grep "raw" |\
@@ -48,5 +47,7 @@ RAWO=$( echo "$RESULT" |\
         cut -d'|' -f4 |\
         sed 's#s###'| xargs)
 
-echo $p" "$DOF" "$LOPE" "$RAW" "$RAWO >> ${OUTPUT}_bkp
-printf "%10d %10d %20f %20f %20f\n" $p $DOF $LOPE $RAW $RAWO >> ${OUTPUT}
+echo "================================================" >> ${OUTPUT}_bkp
+echo "np="$p >> ${OUTPUT}_bkp
+echo "$RESULT" >> ${OUTPUT}_bkp
+printf "%10d %10d %20f %20f %20f\n" $p $DOF $LOP $RAW $RAWO >> ${OUTPUT}
