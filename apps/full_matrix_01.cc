@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
   // ============================================================ deal.II LO
   reset_vector(x);
 
-  const auto step = linear_operator(matrix) * x;
+  const auto op = linear_operator(matrix);
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
   // ============================================================ Blaze LO
   reset_vector(Bx);
 
-  const auto Bstep = blaze_lo(Bmatrix) * Bxx;
+  const auto Blo = blaze_lo(Bmatrix);
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
   // ============================================================ Eigen LO
   reset_vector(Ex);
 
-  auto Estep = eigen_lo(Ematrix) * Ex;
+  auto Elo = eigen_lo(Ematrix);
 
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)

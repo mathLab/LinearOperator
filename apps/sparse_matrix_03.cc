@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
   const auto op = linear_operator(matrix);
   const auto reinit = op.reinit_range_vector;
-  const auto step = (3.0 * identity_operator(reinit) + op) * op * x;
+  const auto step = (3.0 * identity_operator(reinit) + op) * op;
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 
   const auto Blo = blaze_lo(Bmatrix);
   const auto Breinit = Blo.reinit_range_vector;
-  const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo * Bxx;
+  const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
   const auto Elo = eigen_lo(Ematrix);
   const auto Ereinit = Elo.reinit_range_vector;
-  const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo * Ex;
+  const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
 
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
