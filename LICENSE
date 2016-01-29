@@ -1,19 +1,17 @@
 
-This directory contains the LinearOperator and PackagedOperation
-classes with their respective benchmarks.
+This directory contains the LinearOperator and PackagedOperation classes
+with their respective benchmarks.
 
-These source codes are originally distributed as part of the 
-deal.II library, and are collected here together with their 
-benchmarks as a convenience to the users. 
+These source codes are originally distributed as part of the deal.II
+library, and are collected here together with their benchmarks as a
+convenience to the users.
 
-The deal.II library and the above classes are free software; 
-you can use it, redistribute it,
-and/or modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either version
-2.1 of the License, or (at your option) any later version.
+The deal.II library and the above classes are free software; you can use
+it, redistribute it, and/or modify it under the terms of the GNU Lesser
+General Public License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
 
-The full text of the GNU Lesser General Public version 2.1 is quoted
-below.
+The full text of the GNU Lesser General Public version 2.1 is quoted below.
 
 ----------------------------------------------------------------------
 
