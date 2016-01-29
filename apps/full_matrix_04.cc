@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      x = step;
+      step.apply(x);
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -109,16 +109,13 @@ int main(int argc, char *argv[])
   // ============================================================ Blaze LO
   reset_vector(Bx);
 
-  auto xx = PackagedOperation<BVector>(Bxx);
-  auto yy = PackagedOperation<BVector>(Byy);
-  auto zz = PackagedOperation<BVector>(Bzz);
-
-  const auto Bstep = blaze_lo(Bmatrix) * (xx + yy + zz);
+  const auto Bstep =
+      blaze_lo(Bmatrix) * (PackagedOperation<BVector>(Bxx) + Byy + Bzz);
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bxx = Bstep;
+      Bstep.apply(Bxx);
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -143,16 +140,13 @@ int main(int argc, char *argv[])
   // ============================================================ Eigen LO
   reset_vector(Ex);
 
-  auto xxx = PackagedOperation<EVector>(Ex);
-  auto yyy = PackagedOperation<EVector>(Ey);
-  auto zzz = PackagedOperation<EVector>(Ez);
-
-  const auto Estep = eigen_lo(Ematrix) * (xxx + yyy + zzz);
+  const auto Estep =
+      eigen_lo(Ematrix) * (PackagedOperation<EVector>(Ex) + Ey + Ez);
 
   timer.enter_subsection("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Ex = Estep;
+      Estep.apply(Ex);
       Ex /= Ex.norm();
     }
   timer.leave_subsection();

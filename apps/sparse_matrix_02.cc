@@ -64,13 +64,13 @@ int main(int argc, char *argv[])
   // ============================================================ deal.II LO
   reset_vector(x);
 
-  auto op = linear_operator(matrix);
-  op = op*op*op;
+  const auto op = linear_operator(matrix);
+  const auto step = op * op * op * x;
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      op.vmult(x, x);
+      step.apply(x);
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("blaze_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bx = Bmatrix*Bmatrix*Bmatrix*Bx;
+      Bx = Bmatrix * Bmatrix * Bmatrix * Bx;
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -93,13 +93,13 @@ int main(int argc, char *argv[])
   // ============================================================ Blaze LO
   reset_vector(Bx);
 
-  auto Blo = blaze_lo(Bmatrix);
-  Blo = Blo*Blo*Blo;
+  const auto Blo = blaze_lo(Bmatrix);
+  const auto Bstep = Blo * Blo * Blo * Bxx;
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Blo.vmult(Bxx,Bxx);
+      Bstep.apply(Bxx);
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
       timer.enter_subsection ("eigen_aaa");
       for (unsigned int i = 0; i < reps/100; ++i)
         {
-          Ex = Ematrix*Ematrix*Ematrix*Ex;
+          Ex = Ematrix * Ematrix * Ematrix * Ex;
           Ex /= norm(Ex);
         }
       timer.leave_subsection();
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("eigen_smart");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Ex = Ematrix*(Ematrix*(Ematrix*Ex));
+      Ex = Ematrix * (Ematrix * (Ematrix * Ex));
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
@@ -138,13 +138,13 @@ int main(int argc, char *argv[])
   // ============================================================ Eigen LO
   reset_vector(Ex);
 
-  auto Elo = eigen_lo(Ematrix);
-  Elo = Elo*Elo*Elo;
+  const auto Elo = eigen_lo(Ematrix);
+  const auto Estep = Elo * Elo * Elo * Ex;
 
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Elo.vmult(Ex,Ex);
+      Estep.apply(Ex);
       Ex /= norm(Ex);
     }
   timer.leave_subsection();

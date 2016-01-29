@@ -60,12 +60,12 @@ int main(int argc, char *argv[])
 
   const auto op = linear_operator(matrix);
   const auto reinit = op.reinit_range_vector;
-  const auto step = (3.0 * identity_operator(reinit) + op) * op;
+  const auto step = (3.0 * identity_operator(reinit) + op) * op * x;
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      step.vmult(x,x);
+      x = step;
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("blaze_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bx = 3*Bmatrix*Bx + Bmatrix*Bmatrix*Bx;
+      Bx = 3 * Bmatrix * Bx + Bmatrix * Bmatrix * Bx;
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -90,12 +90,12 @@ int main(int argc, char *argv[])
 
   const auto Blo = blaze_lo(Bmatrix);
   const auto Breinit = Blo.reinit_range_vector;
-  const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
+  const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo * Bxx;
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Bstep.vmult(Bxx,Bxx);
+      Bstep.apply(Bxx);
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
   timer.enter_subsection ("eigen_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Ex = 3*Ematrix*Ex + Ematrix*(Ematrix*Ex);
+      Ex = 3 * Ematrix * Ex + Ematrix * (Ematrix * Ex);
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
@@ -120,12 +120,12 @@ int main(int argc, char *argv[])
 
   const auto Elo = eigen_lo(Ematrix);
   const auto Ereinit = Elo.reinit_range_vector;
-  const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
+  const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo * Ex;
 
   timer.enter_subsection ("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
     {
-      Estep.vmult(Ex,Ex);
+      Estep.apply(Ex);
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
