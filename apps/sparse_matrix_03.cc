@@ -150,17 +150,32 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Ex);
 
-  // ============================================================ Eigen LO
+  // ============================================================ Eigen Slow LO
   reset_vector(Ex);
 
   const auto Elo = eigen_lo(Ematrix);
   const auto Ereinit = Elo.reinit_range_vector;
   const auto Estep = (3.0 * identity_operator(Ereinit) + Elo) * Elo;
 
-  timer.enter_subsection ("eigen_lo");
+  timer.enter_subsection ("eigen_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       Ex = Estep * Ex;
+      Ex /= norm(Ex);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Ex);
+
+  // ============================================================ Eigen LO
+  reset_vector(Ex);
+
+  const auto Estep2 = (3.0 * identity_operator(Ereinit) + Elo) * Elo * Ex;
+
+  timer.enter_subsection ("eigen_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Ex = Estep2;
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
