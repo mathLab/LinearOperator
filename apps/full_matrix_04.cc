@@ -40,14 +40,14 @@ int main(int argc, char *argv[])
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
 
-  // ============================================================ deal.II RAW
+  // ============================================================ deal.II Slow RAW
   reset_vector(x);
   y = x;
   z = x;
 
   Vector<double> tmp(n);
 
-  timer.enter_subsection ("dealii_raw");
+  timer.enter_subsection ("dealii_slowraw");
   for (unsigned int i = 0; i < reps; ++i)
     {
       matrix.vmult(tmp, x);
@@ -60,10 +60,10 @@ int main(int argc, char *argv[])
 
   ref = x;
 
-  // ============================================================ deal.II RAW SMART
+  // ============================================================ deal.II RAW
   reset_vector(x);
 
-  timer.enter_subsection ("dealii_smart");
+  timer.enter_subsection ("dealii_raw");
   for (unsigned int i = 0; i < reps; ++i)
     {
       tmp = x;
@@ -76,10 +76,25 @@ int main(int argc, char *argv[])
 
   check_vector(ref,x);
 
+  // ============================================================ deal.II Slow LO
+  reset_vector(x);
+
+  const auto lo = linear_operator(matrix);
+
+  timer.enter_subsection ("dealii_slowlo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      x = lo * ( x + y + z);
+      x /= norm(x);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,x);
+
   // ============================================================ deal.II LO
   reset_vector(x);
 
-  const auto step = linear_operator(matrix) * (x + y + z);
+  const auto step = lo * (x + y + z);
 
   timer.enter_subsection ("dealii_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -106,6 +121,22 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Bx);
 
+  // ============================================================ Blaze Slow LO
+  reset_vector(Bx);
+
+  const auto Blo = blaze_lo(Bmatrix);
+
+  timer.enter_subsection ("blaze_slowlo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Bxx = Blo * (PackagedOperation<BVector>(Bxx) + Byy + Bzz);
+      Bx /= norm(Bx);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Bx);
+
+  
   // ============================================================ Blaze LO
   reset_vector(Bx);
 
@@ -137,11 +168,25 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Ex);
 
+  // ============================================================ Eigen Slow LO
+  reset_vector(Ex);
+
+  const auto Elo = eigen_lo(Ematrix);
+
+  timer.enter_subsection("eigen_slowlo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Ex = Elo * (PackagedOperation<EVector>(Ex) + Ey + Ez);
+      Ex /= Ex.norm();
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Ex);
+  
   // ============================================================ Eigen LO
   reset_vector(Ex);
 
-  const auto Estep =
-      eigen_lo(Ematrix) * (PackagedOperation<EVector>(Ex) + Ey + Ez);
+  const auto Estep = Elo * (PackagedOperation<EVector>(Ex) + Ey + Ez);
 
   timer.enter_subsection("eigen_lo");
   for (unsigned int i = 0; i < reps; ++i)
