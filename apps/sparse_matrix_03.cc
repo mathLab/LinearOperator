@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   std::cout << "Case 2 - SparseMatrix" << std::endl;
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
-
+  
   // ============================================================ deal.II RAW
   reset_vector(x);
 
@@ -60,17 +60,32 @@ int main(int argc, char *argv[])
 
   ref = x;
 
-  // ============================================================ deal.II LO
+  // ============================================================ deal.II Slow LO
   reset_vector(x);
 
   const auto op = linear_operator(matrix);
   const auto reinit = op.reinit_range_vector;
   const auto step = (3.0 * identity_operator(reinit) + op) * op;
 
-  timer.enter_subsection ("dealii_lo");
+  timer.enter_subsection ("dealii_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       x = step * x;
+      x /= norm(x);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,x);
+
+  // ============================================================ deal.II LO
+  reset_vector(x);
+
+  const auto step2 = (3.0 * identity_operator(reinit) + op) * op * x;
+
+  timer.enter_subsection ("dealii_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      x = step2;
       x /= norm(x);
     }
   timer.leave_subsection();
@@ -90,17 +105,32 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Bx);
 
-  // ============================================================ Blaze LO
+  // ============================================================ Blaze Slow LO
   reset_vector(Bx);
 
   const auto Blo = blaze_lo(Bmatrix);
   const auto Breinit = Blo.reinit_range_vector;
   const auto Bstep = (3.0 * identity_operator(Breinit) + Blo) * Blo;
 
-  timer.enter_subsection ("blaze_lo");
+  timer.enter_subsection ("blaze_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       Bxx = Bstep * Bxx;
+      Bx /= norm(Bx);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Bx);
+
+  // ============================================================ Blaze LO
+  reset_vector(Bx);
+
+  const auto Bstep2 = (3.0 * identity_operator(Breinit) + Blo) * Blo * Bxx;
+
+  timer.enter_subsection ("blaze_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Bstep2.apply(Bxx);
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
