@@ -29,9 +29,9 @@ function print_header
   echo ""
   echo "$EXECUTABLE:"
   echo ""
-  printf "%10s %10s %20s %20s %20s %20s %20s %20s %20s %20s \n" \
-         "n" "reps" "DEAL_RAW" "DEAL_SMA" "DEAL_LOP" "EIGE_RAW" "EIGE_SMA" "EIGE_LOP" "BLAZ_RAW" "BLAZ_LOP"
-  echo "n reps DEAL_RAW DEAL_SMA DEAL_LOP EIGE_RAW EIGE_SMA EIGE_LOP BLAZ_RAW BLAZ_LOP" >> $OUT_NAME
+  printf "%7s %7s %9s %9s %9s %9s %9s %9s %9s %9s %9s %9s %9s \n" \
+         "n" "reps" "DEA_RAW" "DEA_SRA" "DEA_LOP" "DEA_SLO" "EIG_RAW" "EIG_SRA" "EIG_LOP" "EIG_SLO" "BLA_RAW" "BLA_LOP" "BLA_SLO"
+  echo "n reps DEA_RAW DEA_SRA DEA_LOP DEA_SLO EIG_RAW EIG_SRA EIG_LOP EIG_SLO BLA_RAW BLA_LOP BLA_SLO" >> $OUT_NAME
 }
 
 function extract_value()
@@ -60,27 +60,29 @@ function step()
     exit 1
   fi
 
-  DEAL_LOP=$( extract_value "$RESULT" "dealii_lo"   )
-  DEAL_RAW=$( extract_value "$RESULT" "dealii_raw"  )
-  DEAL_SMA=$( extract_value "$RESULT" "dealii_smart"  )
-  EIGE_LOP=$( extract_value "$RESULT" "eigen_lo"    )
-  EIGE_RAW=$( extract_value "$RESULT" "eigen_raw"   )
-  EIGE_RAWW=$( extract_value "$RESULT" "eigen_aaa"   )
-  EIGE_SMA=$( extract_value "$RESULT" "eigen_smart" )
-  BLAZ_LOP=$( extract_value "$RESULT" "blaze_lo"    )
-  BLAZ_RAW=$( extract_value "$RESULT" "blaze_raw"   )
+  DEA_LOP=$( extract_value "$RESULT" "dealii_lo"      )
+  DEA_SLO=$( extract_value "$RESULT" "dealii_slowlo"  )
+  DEA_RAW=$( extract_value "$RESULT" "dealii_raw"     )
+  DEA_SRA=$( extract_value "$RESULT" "dealii_slowraw" )
+  EIG_LOP=$( extract_value "$RESULT" "eigen_lo"       )
+  EIG_SLO=$( extract_value "$RESULT" "eigen_slowlo"   )
+  EIG_RAW=$( extract_value "$RESULT" "eigen_raw"      )
+  EIG_SRA=$( extract_value "$RESULT" "eigen_slowraw"  )
+  BLA_LOP=$( extract_value "$RESULT" "blaze_lo"       )
+  BLA_SLO=$( extract_value "$RESULT" "blaze_slowlo"   )
+  BLA_RAW=$( extract_value "$RESULT" "blaze_raw"      )
 
   DOF=$(  echo "$RESULT" |\
           grep "n:    " |\
           sed 's#n:    ##')
 
-  EIGE_RAWW=$( echo "$EIGE_RAWW*100" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
-  EIGE_RAW=$( echo "$EIGE_RAW+$EIGE_RAWW" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
+  EIG_SRA=$( echo "$EIG_SRA*100" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
+  # EIG_RAW=$( echo "$EIG_RAW+$EIGE_RAWW" | sed 's/[eE]+\{0,1\}/*10^/g' | bc -l )
   
-  printf "%10d %10d %20f %20f %20f %20f %20f %20f %20f %20f\n" \
-         $DOF $REPS $DEAL_RAW $DEAL_SMA $DEAL_LOP $EIGE_RAW $EIGE_SMA $EIGE_LOP $BLAZ_RAW $BLAZ_LOP
+  printf "%7d %7d %9f %9f %9f %9f %9f %9f %9f %9f %9f %9f %9f \n" \
+         $DOF $REPS $DEA_RAW $DEA_SRA $DEA_LOP $DEA_SLO $EIG_RAW $EIG_SRA $EIG_LOP $EIG_SLO $BLA_RAW $BLA_LOP $BLA_SLO
   
-  echo $DOF" "$REPS" "$DEAL_RAW" "$DEAL_SMA" "$DEAL_LOP" "$EIGE_RAW" "$EIGE_SMA" "$EIGE_LOP" "$BLAZ_RAW" "$BLAZ_LOP >> $OUT_NAME
+  echo $DOF" "$REPS" "$DEA_RAW" "$DEA_SRA" "$DEA_LOP" "$DEA_SLO" "$EIG_RAW" "$EIG_SRA" "$EIG_LOP" "$EIG_SLO" "$BLA_RAW" "$BLA_LOP" "$BLA_SLO >> $OUT_NAME
 }
 
 function plot
