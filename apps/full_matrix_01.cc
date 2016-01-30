@@ -54,12 +54,12 @@ int main(int argc, char *argv[])
 
   ref = x;
 
-  // ============================================================ deal.II LO
+  // ============================================================ deal.II Slow LO
   reset_vector(x);
 
   const auto op = linear_operator(matrix);
 
-  timer.enter_subsection ("dealii_lo");
+  timer.enter_subsection ("dealii_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       x = op * x;
@@ -68,7 +68,22 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,x);
+  
+  // ============================================================ deal.II LO
+  reset_vector(x);
 
+  const auto step = linear_operator(matrix) * x;
+
+  timer.enter_subsection ("dealii_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      step.apply(x);
+      x /= norm(x);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,x);
+  
   // ============================================================ Blaze Raw
   reset_vector(Bx);
 
@@ -82,15 +97,30 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Bx);
 
-  // ============================================================ Blaze LO
+  // ============================================================ Blaze Slow LO
   reset_vector(Bx);
 
   const auto Blo = blaze_lo(Bmatrix);
 
-  timer.enter_subsection ("blaze_lo");
+  timer.enter_subsection ("blaze_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       Bxx = Blo * Bxx;
+      Bx /= norm(Bx);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Bx);
+
+  // ============================================================ Blaze LO
+  reset_vector(Bx);
+
+  const auto Bstep = blaze_lo(Bmatrix) * Bxx;
+
+  timer.enter_subsection ("blaze_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Bstep.apply(Bxx);
       Bx /= norm(Bx);
     }
   timer.leave_subsection();
@@ -110,15 +140,30 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Ex);
 
-  // ============================================================ Eigen LO
+  // ============================================================ Eigen Slow LO
   reset_vector(Ex);
 
   auto Elo = eigen_lo(Ematrix);
 
-  timer.enter_subsection ("eigen_lo");
+  timer.enter_subsection ("eigen_slowlo");
   for (unsigned int i = 0; i < reps; ++i)
     {
       Ex = Elo * Ex;
+      Ex /= norm(Ex);
+    }
+  timer.leave_subsection();
+
+  check_vector(ref,Ex);
+  
+  // ============================================================ Eigen LO
+  reset_vector(Ex);
+
+  auto Estep = eigen_lo(Ematrix) * Ex;
+
+  timer.enter_subsection ("eigen_lo");
+  for (unsigned int i = 0; i < reps; ++i)
+    {
+      Estep.apply(Ex);
       Ex /= norm(Ex);
     }
   timer.leave_subsection();
