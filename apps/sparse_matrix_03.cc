@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   std::cout << "Case 2 - SparseMatrix" << std::endl;
   std::cout << "n:    " << n << std::endl;
   std::cout << "reps: " << reps << std::endl;
-  
+
   // ============================================================ deal.II RAW
   reset_vector(x);
 

@@ -286,16 +286,16 @@ namespace Step32
       const PreconditionerA  &a_preconditioner;
       const bool do_solve_A;
     };
-    
+
     template <class PreconditionerA, class PreconditionerMp>
     class BlockSchurPreconditionerOpt : public Subscriptor
     {
     public:
       BlockSchurPreconditionerOpt (const TrilinosWrappers::BlockSparseMatrix  &S,
-                                const TrilinosWrappers::BlockSparseMatrix  &Spre,
-                                const PreconditionerMp                     &Mppreconditioner,
-                                const PreconditionerA                      &Apreconditioner,
-                                const bool                                  do_solve_A)
+                                   const TrilinosWrappers::BlockSparseMatrix  &Spre,
+                                   const PreconditionerMp                     &Mppreconditioner,
+                                   const PreconditionerA                      &Apreconditioner,
+                                   const bool                                  do_solve_A)
         :
         stokes_matrix     (&S),
         stokes_preconditioner_matrix     (&Spre),
@@ -326,7 +326,7 @@ namespace Step32
           utmp*=-1.0;
           utmp.add(src.block(0));
         }
-          a_preconditioner.vmult (dst.block(0), utmp);
+        a_preconditioner.vmult (dst.block(0), utmp);
       }
 
     private:
@@ -336,7 +336,7 @@ namespace Step32
       const PreconditionerA  &a_preconditioner;
       const bool do_solve_A;
     };
-  
+
   }
 
 
@@ -3041,80 +3041,80 @@ namespace Step32
 
       // try
       //   {
-          const LinearSolvers::BlockSchurPreconditioner<TrilinosWrappers::PreconditionAMG,
-                TrilinosWrappers::PreconditionJacobi>
-                preconditioner (stokes_matrix, stokes_preconditioner_matrix,
+      const LinearSolvers::BlockSchurPreconditioner<TrilinosWrappers::PreconditionAMG,
+            TrilinosWrappers::PreconditionJacobi>
+            preconditioner (stokes_matrix, stokes_preconditioner_matrix,
+                            *Mp_preconditioner, *Amg_preconditioner,
+                            false);
+      const LinearSolvers::BlockSchurPreconditionerOpt<TrilinosWrappers::PreconditionAMG,
+            TrilinosWrappers::PreconditionJacobi>
+            preconditioner_opt (stokes_matrix, stokes_preconditioner_matrix,
                                 *Mp_preconditioner, *Amg_preconditioner,
                                 false);
-          const LinearSolvers::BlockSchurPreconditionerOpt<TrilinosWrappers::PreconditionAMG,
-                TrilinosWrappers::PreconditionJacobi>
-                preconditioner_opt (stokes_matrix, stokes_preconditioner_matrix,
-                                *Mp_preconditioner, *Amg_preconditioner,
-                                false);                  
 // BENCHMARK:
-        // auto tmp_1 = distributed_stokes_solution;
-        // auto tmp = stokes_rhs;
-        SolverControl solver_control_pre(5000, 1e-6);
-        SolverCG<TrilinosWrappers::MPI::Vector> solver_CG(solver_control_pre);
-        
-        TimerOutput timer(pcout, TimerOutput::summary, TimerOutput::wall_times);
-        timer.enter_subsection ("raw");
-        for(unsigned int i=0; i< 100; ++i)
-          preconditioner.vmult(distributed_stokes_solution, stokes_rhs);
-        timer.leave_subsection();
+      // auto tmp_1 = distributed_stokes_solution;
+      // auto tmp = stokes_rhs;
+      SolverControl solver_control_pre(5000, 1e-6);
+      SolverCG<TrilinosWrappers::MPI::Vector> solver_CG(solver_control_pre);
 
-        timer.enter_subsection ("raw opt");
-        for(unsigned int i=0; i< 100; ++i)
-          preconditioner_opt.vmult(distributed_stokes_solution, stokes_rhs);
-        timer.leave_subsection();
+      TimerOutput timer(pcout, TimerOutput::summary, TimerOutput::wall_times);
+      timer.enter_subsection ("raw");
+      for (unsigned int i=0; i< 100; ++i)
+        preconditioner.vmult(distributed_stokes_solution, stokes_rhs);
+      timer.leave_subsection();
 
-        // SYSTEM MATRIX:
-        auto A  = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(0,0) );
-        auto Bt = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(0,1) );
-        //  auto B =  transpose_operator(Bt);
-        auto B     = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(1,0) );
-        auto ZeroP = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(1,1) );
+      timer.enter_subsection ("raw opt");
+      for (unsigned int i=0; i< 100; ++i)
+        preconditioner_opt.vmult(distributed_stokes_solution, stokes_rhs);
+      timer.leave_subsection();
 
-        auto Mp    = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(1,1) );
-        // auto Amg   = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(0,0) );
+      // SYSTEM MATRIX:
+      auto A  = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(0,0) );
+      auto Bt = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(0,1) );
+      //  auto B =  transpose_operator(Bt);
+      auto B     = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(1,0) );
+      auto ZeroP = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_matrix.block(1,1) );
+
+      auto Mp    = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(1,1) );
+      // auto Amg   = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(0,0) );
 
 
 
-        auto Schur_inv = inverse_operator( Mp, solver_CG, *Mp_preconditioner);
-        // auto A_inv     = inverse_operator( A, solver_CG, *Amg_preconditioner);
-        auto Amg   = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(0,0),*Amg_preconditioner );
-        auto P00 = Amg;
-        auto P01 = Amg * Bt * Schur_inv;
-        auto P10 = 0 * B;
-        auto P11 = -1 * Schur_inv;
+      auto Schur_inv = inverse_operator( Mp, solver_CG, *Mp_preconditioner);
+      // auto A_inv     = inverse_operator( A, solver_CG, *Amg_preconditioner);
+      auto Amg   = linear_operator< TrilinosWrappers::MPI::Vector >( stokes_preconditioner_matrix.block(0,0),*Amg_preconditioner );
+      auto P00 = Amg;
+      auto P01 = Amg * Bt * Schur_inv;
+      auto P10 = 0 * B;
+      auto P11 = -1 * Schur_inv;
 
-        const auto Mat = block_operator<2, 2, TrilinosWrappers::MPI::BlockVector >(
+      const auto Mat = block_operator<2, 2, TrilinosWrappers::MPI::BlockVector >(
+      {
         {
-          {
-            {{ A, Bt }} ,
-            {{ B, ZeroP }}
-          }
-        } );
+          {{ A, Bt }} ,
+          {{ B, ZeroP }}
+        }
+      } );
 
-        const auto DiagInv = block_diagonal_operator<2, TrilinosWrappers::MPI::BlockVector >({ Amg, -1*Schur_inv });
+      const auto DiagInv = block_diagonal_operator<2, TrilinosWrappers::MPI::BlockVector >({ Amg, -1*Schur_inv });
 
-        const auto P_inv = block_back_substitution<TrilinosWrappers::MPI::BlockVector>(Mat, DiagInv);
+      const auto P_inv = block_back_substitution<TrilinosWrappers::MPI::BlockVector>(Mat, DiagInv);
 
-        timer.enter_subsection ("LO");
-        for(unsigned int i=0; i< 100; ++i)
-          P_inv.vmult(distributed_stokes_solution, stokes_rhs);
-        timer.leave_subsection();
-        // exit(0);
-// 
-        //   SolverFGMRES<TrilinosWrappers::MPI::BlockVector>
-        //   solver(solver_control, mem,
-        //          SolverFGMRES<TrilinosWrappers::MPI::BlockVector>::
-        //          AdditionalData(30, true));
-        //   solver.solve(stokes_matrix, distributed_stokes_solution, stokes_rhs,
-        //                preconditioner);
-        // 
-        //   n_iterations = solver_control.last_step();
-        // }
+      timer.enter_subsection ("LO");
+      for (unsigned int i=0; i< 100; ++i)
+        P_inv.vmult(distributed_stokes_solution, stokes_rhs);
+      timer.leave_subsection();
+      // exit(0);
+//
+      //   SolverFGMRES<TrilinosWrappers::MPI::BlockVector>
+      //   solver(solver_control, mem,
+      //          SolverFGMRES<TrilinosWrappers::MPI::BlockVector>::
+      //          AdditionalData(30, true));
+      //   solver.solve(stokes_matrix, distributed_stokes_solution, stokes_rhs,
+      //                preconditioner);
+      //
+      //   n_iterations = solver_control.last_step();
+      // }
 
       // catch (SolverControl::NoConvergence)
       //   {
@@ -3123,7 +3123,7 @@ namespace Step32
       //           preconditioner (stokes_matrix, stokes_preconditioner_matrix,
       //                           *Mp_preconditioner, *Amg_preconditioner,
       //                           true);
-      // 
+      //
       //     SolverControl solver_control_refined (stokes_matrix.m(), solver_tolerance);
       //     SolverFGMRES<TrilinosWrappers::MPI::BlockVector>
       //     solver(solver_control_refined, mem,
@@ -3131,7 +3131,7 @@ namespace Step32
       //            AdditionalData(50, true));
       //     solver.solve(stokes_matrix, distributed_stokes_solution, stokes_rhs,
       //                  preconditioner);
-      // 
+      //
       //     n_iterations = (solver_control.last_step() +
       //                     solver_control_refined.last_step());
       //   }
@@ -3726,7 +3726,7 @@ namespace Step32
     time_step = old_time_step = 0;
 
     double time = 0;
-    // 
+    //
     // do
     //   {
     //     pcout << "Timestep " << timestep_number
@@ -3734,89 +3734,89 @@ namespace Step32
     //           << " years"
     //           << std::endl;
 
-        assemble_stokes_system ();
-        build_stokes_preconditioner ();
-        assemble_temperature_matrix ();
+    assemble_stokes_system ();
+    build_stokes_preconditioner ();
+    assemble_temperature_matrix ();
 
-        solve ();
-  // 
-  //       pcout << std::endl;
-  // 
-  //       if ((timestep_number == 0) &&
-  //           (pre_refinement_step < parameters.initial_adaptive_refinement))
-  //         {
-  //           refine_mesh (parameters.initial_global_refinement +
-  //                        parameters.initial_adaptive_refinement);
-  //           ++pre_refinement_step;
-  //           goto start_time_iteration;
-  //         }
-  //       else if ((timestep_number > 0)
-  //                &&
-  //                (timestep_number % parameters.adaptive_refinement_interval == 0))
-  //         refine_mesh (parameters.initial_global_refinement +
-  //                      parameters.initial_adaptive_refinement);
-  // 
-  //       if ((parameters.generate_graphical_output == true)
-  //           &&
-  //           (timestep_number % parameters.graphical_output_interval == 0))
-  //         output_results ();
-  // 
-  //       // In order to speed up linear solvers, we extrapolate the solutions
-  //       // from the old time levels to the new one. This gives a very good
-  //       // initial guess, cutting the number of iterations needed in solvers
-  //       // by more than one half. We do not need to extrapolate in the last
-  //       // iteration, so if we reached the final time, we stop here.
-  //       //
-  //       // As the last thing during a time step (before actually bumping up
-  //       // the number of the time step), we check whether the current time
-  //       // step number is divisible by 100, and if so we let the computing
-  //       // timer print a summary of CPU times spent so far.
-  //       if (time > parameters.end_time * EquationData::year_in_seconds)
-  //         break;
-  // 
-  //       TrilinosWrappers::MPI::BlockVector old_old_stokes_solution;
-  //       old_old_stokes_solution      = old_stokes_solution;
-  //       old_stokes_solution          = stokes_solution;
-  //       old_old_temperature_solution = old_temperature_solution;
-  //       old_temperature_solution     = temperature_solution;
-  //       if (old_time_step > 0)
-  //         {
-  //           //Trilinos sadd does not like ghost vectors even as input. Copy
-  //           //into distributed vectors for now:
-  //           {
-  //             TrilinosWrappers::MPI::BlockVector distr_solution (stokes_rhs);
-  //             distr_solution = stokes_solution;
-  //             TrilinosWrappers::MPI::BlockVector distr_old_solution (stokes_rhs);
-  //             distr_old_solution = old_old_stokes_solution;
-  //             distr_solution .sadd (1.+time_step/old_time_step, -time_step/old_time_step,
-  //                                   distr_old_solution);
-  //             stokes_solution = distr_solution;
-  //           }
-  //           {
-  //             TrilinosWrappers::MPI::Vector distr_solution (temperature_rhs);
-  //             distr_solution = temperature_solution;
-  //             TrilinosWrappers::MPI::Vector distr_old_solution (temperature_rhs);
-  //             distr_old_solution = old_old_temperature_solution;
-  //             distr_solution .sadd (1.+time_step/old_time_step, -time_step/old_time_step,
-  //                                   distr_old_solution);
-  //             temperature_solution = distr_solution;
-  //           }
-  //         }
-  // 
-  //       if ((timestep_number > 0) && (timestep_number % 100 == 0))
-  //         computing_timer.print_summary ();
-  // 
-  //       time += time_step;
-  //       ++timestep_number;
-  //     }
-  //   while (true);
-  // 
-  //   // If we are generating graphical output, do so also for the last time
-  //   // step unless we had just done so before we left the do-while loop
-  //   if ((parameters.generate_graphical_output == true)
-  //       &&
-  //       !((timestep_number-1) % parameters.graphical_output_interval == 0))
-  //     output_results ();
+    solve ();
+    //
+    //       pcout << std::endl;
+    //
+    //       if ((timestep_number == 0) &&
+    //           (pre_refinement_step < parameters.initial_adaptive_refinement))
+    //         {
+    //           refine_mesh (parameters.initial_global_refinement +
+    //                        parameters.initial_adaptive_refinement);
+    //           ++pre_refinement_step;
+    //           goto start_time_iteration;
+    //         }
+    //       else if ((timestep_number > 0)
+    //                &&
+    //                (timestep_number % parameters.adaptive_refinement_interval == 0))
+    //         refine_mesh (parameters.initial_global_refinement +
+    //                      parameters.initial_adaptive_refinement);
+    //
+    //       if ((parameters.generate_graphical_output == true)
+    //           &&
+    //           (timestep_number % parameters.graphical_output_interval == 0))
+    //         output_results ();
+    //
+    //       // In order to speed up linear solvers, we extrapolate the solutions
+    //       // from the old time levels to the new one. This gives a very good
+    //       // initial guess, cutting the number of iterations needed in solvers
+    //       // by more than one half. We do not need to extrapolate in the last
+    //       // iteration, so if we reached the final time, we stop here.
+    //       //
+    //       // As the last thing during a time step (before actually bumping up
+    //       // the number of the time step), we check whether the current time
+    //       // step number is divisible by 100, and if so we let the computing
+    //       // timer print a summary of CPU times spent so far.
+    //       if (time > parameters.end_time * EquationData::year_in_seconds)
+    //         break;
+    //
+    //       TrilinosWrappers::MPI::BlockVector old_old_stokes_solution;
+    //       old_old_stokes_solution      = old_stokes_solution;
+    //       old_stokes_solution          = stokes_solution;
+    //       old_old_temperature_solution = old_temperature_solution;
+    //       old_temperature_solution     = temperature_solution;
+    //       if (old_time_step > 0)
+    //         {
+    //           //Trilinos sadd does not like ghost vectors even as input. Copy
+    //           //into distributed vectors for now:
+    //           {
+    //             TrilinosWrappers::MPI::BlockVector distr_solution (stokes_rhs);
+    //             distr_solution = stokes_solution;
+    //             TrilinosWrappers::MPI::BlockVector distr_old_solution (stokes_rhs);
+    //             distr_old_solution = old_old_stokes_solution;
+    //             distr_solution .sadd (1.+time_step/old_time_step, -time_step/old_time_step,
+    //                                   distr_old_solution);
+    //             stokes_solution = distr_solution;
+    //           }
+    //           {
+    //             TrilinosWrappers::MPI::Vector distr_solution (temperature_rhs);
+    //             distr_solution = temperature_solution;
+    //             TrilinosWrappers::MPI::Vector distr_old_solution (temperature_rhs);
+    //             distr_old_solution = old_old_temperature_solution;
+    //             distr_solution .sadd (1.+time_step/old_time_step, -time_step/old_time_step,
+    //                                   distr_old_solution);
+    //             temperature_solution = distr_solution;
+    //           }
+    //         }
+    //
+    //       if ((timestep_number > 0) && (timestep_number % 100 == 0))
+    //         computing_timer.print_summary ();
+    //
+    //       time += time_step;
+    //       ++timestep_number;
+    //     }
+    //   while (true);
+    //
+    //   // If we are generating graphical output, do so also for the last time
+    //   // step unless we had just done so before we left the do-while loop
+    //   if ((parameters.generate_graphical_output == true)
+    //       &&
+    //       !((timestep_number-1) % parameters.graphical_output_interval == 0))
+    //     output_results ();
   }
 }
 

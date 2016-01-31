@@ -140,12 +140,12 @@ int main(int argc, char *argv[])
 
   check_vector(ref,Bx);
 
-  
+
   // ============================================================ Blaze LO
   reset_vector(Bx);
 
   const auto Bstep =
-      blaze_lo(Bmatrix) * (PackagedOperation<BVector>(Bxx) + Byy + Bzz);
+    blaze_lo(Bmatrix) * (PackagedOperation<BVector>(Bxx) + Byy + Bzz);
 
   timer.enter_subsection ("blaze_lo");
   for (unsigned int i = 0; i < reps; ++i)
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,Ex);
-  
+
   // ============================================================ Eigen LO
   reset_vector(Ex);
 

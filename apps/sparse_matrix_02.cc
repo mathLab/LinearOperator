@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,Ex);
-  
+
   // ============================================================ Eigen LO
   reset_vector(Ex);
 

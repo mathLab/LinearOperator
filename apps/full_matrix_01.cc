@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,x);
-  
+
   // ============================================================ deal.II LO
   reset_vector(x);
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,x);
-  
+
   // ============================================================ Blaze Raw
   reset_vector(Bx);
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
   timer.leave_subsection();
 
   check_vector(ref,Ex);
-  
+
   // ============================================================ Eigen LO
   reset_vector(Ex);
 

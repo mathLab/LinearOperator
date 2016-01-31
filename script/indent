@@ -24,7 +24,7 @@ fi
 # collect a list of files and then spawn a parallel process to
 # indent all of them
 echo "--- Indenting all header and source files"
-for dir in apps source include; do
+for dir in apps include; do
 files=`find $dir | egrep '\.(cc|h)$'` ;
     if test -n "$files" ; then
 	(astyle --options=script/astyle.rc $files ) &
