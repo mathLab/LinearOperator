@@ -1,0 +1,8 @@
+[submodule "eigen"]
+	path = eigen
+	url = git@github.com:RLovelett/eigen.git
+        ignore = dirty
+[submodule "blaze"]
+	path = blaze
+	url = https://bitbucket.org/blaze-lib/blaze
+        ignore = dirty
