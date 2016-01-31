@@ -49,25 +49,38 @@ in `dealii`, `eigen`, or `blaze`, and two variants involving `LinearOperator` an
 `PackagedOperation` objects in each loop, while the second makes one construction 
 outside the loop, and only uses the objects that have been previously constructed. 
 
+Each benchmark requires two arguments at commandline: a matrix size (for the dense
+matrix case) or a refinement level (for the sparse matrix cases) and a number of 
+repetitions for the test. For example
+
+    ./full_matrix_01 100 1000
+
+performs the test `full_matrix_01` on 100x100 matrices for 1000 repetitions, while
+
+    ./sparse_matrix_01 3 100
+
+performs the test `sparse_matrix_01` on a grid of 3 by 3 cells, assemblying the
+stiffness matrix of a Poisson problem, and performs the test 100 times.
+
 The following tests are provided:
 
-### `{full,sparse}_matrix_01.cc`
+**`{full,sparse}_matrix_01.cc`**
 
 Compute `M*v`
 
-### `{full,sparse}_matrix_02.cc`
+**`{full,sparse}_matrix_02.cc`**
 
 Compute `M*M*M*v`
 
-### `{full,sparse}_matrix_03.cc`
+**`{full,sparse}_matrix_03.cc`**
 
 Compute `(3*Id+M)*M*v`
 
-### `{full,sparse}_matrix_04.cc`
+**`{full,sparse}_matrix_04.cc`**
 
 Compute `M*(x+y+z)`
 
-### step_32.cc
+**`step_32.cc`**
 
 Compute a preconditioner for Stokes system, using a low level `deal.II` implementation, 
 or using a `LinearOperator` variant.
