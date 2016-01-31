@@ -64,23 +64,13 @@ stiffness matrix of a Poisson problem, and performs the test 100 times.
 
 The following tests are provided:
 
-**`{full,sparse}_matrix_01.cc`**
+- **`{full,sparse}_matrix_01.cc`**: compute `M*v`
 
-Compute `M*v`
+- **`{full,sparse}_matrix_02.cc`**: compute `M*M*M*v`
 
-**`{full,sparse}_matrix_02.cc`**
+- **`{full,sparse}_matrix_03.cc`**: compute `(3*Id+M)*M*v`
 
-Compute `M*M*M*v`
+- **`{full,sparse}_matrix_04.cc`**: compute `M*(x+y+z)`
 
-**`{full,sparse}_matrix_03.cc`**
-
-Compute `(3*Id+M)*M*v`
-
-**`{full,sparse}_matrix_04.cc`**
-
-Compute `M*(x+y+z)`
-
-**`step_32.cc`**
-
-Compute a preconditioner for Stokes system, using a low level `deal.II` implementation, 
+- **`step_32.cc`**: compute a preconditioner for Stokes system, using a low level `deal.II` implementation, 
 or using a `LinearOperator` variant.
