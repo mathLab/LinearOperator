@@ -16,7 +16,7 @@ cd ..
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 
-source /home/mbarde/opt/module.conf
+# source /home/mbarde/opt/module.conf
 
 let p=$nodes*20
 
