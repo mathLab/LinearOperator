@@ -1,5 +1,7 @@
 # LinearOperator - a generic, high-level expression syntax for linear algebra
 
+[![DOI](https://zenodo.org/badge/4899/mathLab/LinearOperator.svg)](https://zenodo.org/badge/latestdoi/4899/mathLab/LinearOperator)
+
 This repository contains all benchmarks and source codes to reproduce the 
 results of the article
 
